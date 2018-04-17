@@ -19,6 +19,16 @@ public class Question {
 
     private int commentCount;
 
+    private int topicId;
+
+    public int getTopicId() {
+        return topicId;
+    }
+
+    public void setTopicId(int topicId) {
+        this.topicId = topicId;
+    }
+
     public int getId() {
         return id;
     }

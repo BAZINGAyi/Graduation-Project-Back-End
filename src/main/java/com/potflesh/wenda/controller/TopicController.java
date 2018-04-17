@@ -28,9 +28,7 @@ public class TopicController {
     public String getAllTopicList(@RequestParam("offset") int offset) {
 
         List<Topic> topicList = topicService.SelectToplicList();
-
         List<Map<String,Object>> vos = new ArrayList< Map<String,Object>>();
-
         for (Topic topic : topicList){
             Map vo = new HashedMap();
             vo.put("topic", topic);

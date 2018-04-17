@@ -40,7 +40,6 @@ public class QuestionController {
     @Autowired
     LikeService likeService;
 
-
     @Autowired
     FollowService followService;
 
@@ -207,10 +206,16 @@ public class QuestionController {
                                 @RequestParam("offset")int offset) {
 
         // 存放每个 question 和 对应 question 的话题类型
-        List<Map<String, Object>> topicQuestionListMap = new ArrayList<>();
-        List<Question> topicQuestionList = new ArrayList<>();
+        List<Question> questionTopicList = questionService.getLastTopicQuestionList(tId, offset);
+        List< Map<String,Object> > vos = new ArrayList< Map<String,Object>>();
+        for (Question question : questionTopicList){
+            Map questionMap = new HashedMap();
+            questionMap.put("question", question);
+            questionMap.put("followCount", followService.getFollowerCount(EntityType.ENTITY_QUESTION, question.getId()));
+            questionMap.put("user", userService.getUser(question.getUserId()));
+            vos.add(questionMap);
+        }
 
-        topicQuestionList = questionService.getLastTopicQuestionList(tId, offset);
-        return "";
+        return WendaUtil.getJSONString(1, vos);
     }
 }

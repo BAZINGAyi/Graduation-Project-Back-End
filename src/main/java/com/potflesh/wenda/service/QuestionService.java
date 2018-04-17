@@ -42,7 +42,10 @@ public class QuestionService {
     }
 
     public List<Question> getLastTopicQuestionList(int tId, int offset) {
-//        questionDAO.selectLastTopicQuestionListByTid(tId, offset);
-        return null;
+        return questionDAO.selectLastTopicQuestionListByTid(tId, offset, 10);
+    }
+
+    public List<Question> getLastSearchQuestionList(String searchContent, int offset) {
+        return questionDAO.selectLastQuestionQuestionListByTitle(searchContent, offset, 10);
     }
 }

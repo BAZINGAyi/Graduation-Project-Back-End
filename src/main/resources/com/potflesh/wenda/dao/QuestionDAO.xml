@@ -4,7 +4,7 @@
 <mapper namespace="com.potflesh.wenda.dao.QuestionDAO">
     <sql id="table">question</sql>
 
-    <sql id="selectFields">id, title, content, comment_count,created_date,user_id
+    <sql id="selectFields">id, title, content, comment_count, created_date, user_id, topic_id
     </sql>
 
     <select id="selectLatestQuestions" resultType="com.potflesh.wenda.model.Question">
@@ -16,6 +16,32 @@
         <if test="userId != 0">
             WHERE user_id = #{userId}
         </if>
+
+        ORDER BY id DESC
+        LIMIT #{offset},#{limit}
+    </select>
+
+    <select id="selectLastTopicQuestionListByTid" resultType="com.potflesh.wenda.model.Question">
+        SELECT
+        <include refid="selectFields"/>
+        FROM
+        <include refid="table"/>
+
+        <if test="topicId != 0">
+            WHERE topic_id = #{topicId}
+        </if>
+
+        ORDER BY id DESC
+        LIMIT #{offset},#{limit}
+    </select>
+
+    <select id="selectLastQuestionQuestionListByTitle" resultType="com.potflesh.wenda.model.Question">
+        SELECT
+        <include refid="selectFields"/>
+        FROM
+        <include refid="table"/>
+
+        WHERE title LIKE "%"#{title}"%"
 
         ORDER BY id DESC
         LIMIT #{offset},#{limit}

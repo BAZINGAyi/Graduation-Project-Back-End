@@ -11,13 +11,13 @@ import java.util.List;
 public interface QuestionDAO {
     String TABLE_NAME = " question ";
 
-    String INSERT_FIELDS = " title, content, created_date, user_id, comment_count ";
+    String INSERT_FIELDS = " title, content, created_date, user_id, comment_count, topic_id ";
 
     String SELECT_FIELDS = " id, " + INSERT_FIELDS;
 
     @Insert({"insert into " ,TABLE_NAME ,  "(",
 
-            INSERT_FIELDS, ") values(#{title},#{content},#{createdDate},#{userId},#{commentCount})"})
+            INSERT_FIELDS, ") values(#{title},#{content},#{createdDate},#{userId},#{commentCount},#{topicId})"})
 
     int addQuestion(Question question);
 
@@ -32,6 +32,11 @@ public interface QuestionDAO {
     @Update({"update ", TABLE_NAME, " set comment_count = #{commentCount} where id=#{id}"})
     int updateCommentCount(@Param("id") int id, @Param("commentCount") int commentCount);
 
+    List<Question> selectLastTopicQuestionListByTid(@Param("topicId") int topicId,
+                                                    @Param("offset") int offset,
+                                                    @Param("limit") int limit);
 
-//    List<Question> selectLastTopicQuestionListByTid(int , int );
+    List<Question> selectLastQuestionQuestionListByTitle(@Param("title") String title,
+                                                         @Param("offset") int offset,
+                                                         @Param("limit") int limit);
 }
