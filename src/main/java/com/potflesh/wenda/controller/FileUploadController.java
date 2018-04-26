@@ -109,15 +109,20 @@ public class FileUploadController {
                 "attachment; filename=\"" + file.getFilename() + "\"").body(file);
     }
 
-    @RequestMapping("/hhhhhhh")
-    public String handleFileUpload(@RequestParam("file") MultipartFile file,
+    @RequestMapping(value ="api/uploadQuestionImage", method = {RequestMethod.POST, RequestMethod.GET})
+    public String handleFileUpload(@RequestParam("editormd-image-file")MultipartFile file,
+                                   @RequestParam("dialog_id") String dialogId,
                                    RedirectAttributes redirectAttributes) {
-
-        storageService.store(file);
-        redirectAttributes.addFlashAttribute("message",
-                "You successfully uploaded " + file.getOriginalFilename() + "!");
-
-        return "redirect:/";
+        String filePath = storageService.store(file);
+        redirectAttributes.addAttribute("dialog_id", dialogId);
+        redirectAttributes.addAttribute("message", "hello");
+        if (filePath != null) {
+            redirectAttributes.addAttribute("success", 1);
+            redirectAttributes.addAttribute("url", filePath);
+        } else {
+            redirectAttributes.addAttribute("success", 0);
+        }
+        return  "redirect:/api/testMarkdownZHANG";
     }
 
     @ExceptionHandler(StorageFileNotFoundException.class)

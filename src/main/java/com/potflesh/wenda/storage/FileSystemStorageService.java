@@ -1,5 +1,6 @@
 package com.potflesh.wenda.storage;
 
+import com.potflesh.wenda.utils.TimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -28,7 +29,7 @@ public class FileSystemStorageService implements StorageService {
     }
 
     @Override
-    public void store(MultipartFile file) {
+    public String store(MultipartFile file) {
         String filename = StringUtils.cleanPath(file.getOriginalFilename());
         try {
             if (file.isEmpty()) {
@@ -41,8 +42,10 @@ public class FileSystemStorageService implements StorageService {
                                 + filename);
             }
             try (InputStream inputStream = file.getInputStream()) {
-                Files.copy(inputStream, this.rootLocation.resolve(filename),
+                Path destinationFiles = this.rootLocation.resolve(TimeUtil.getCurrentTimeUsingCalendar() + filename);
+                Files.copy(inputStream, destinationFiles,
                     StandardCopyOption.REPLACE_EXISTING);
+                return filename;
             }
         }
         catch (IOException e) {
