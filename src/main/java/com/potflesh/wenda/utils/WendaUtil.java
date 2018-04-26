@@ -64,9 +64,9 @@ public class WendaUtil {
     public static String getJSONString(int code, Map<String, Object> map) {
         JSONObject json = new JSONObject();
         for (Map.Entry<String, Object> entry : map.entrySet()) {
-            System.out.println(entry.getKey());
             json.put(entry.getKey(), entry.getValue());
         }
+        json.put("code", code);
         return json.toJSONString();
     }
 
