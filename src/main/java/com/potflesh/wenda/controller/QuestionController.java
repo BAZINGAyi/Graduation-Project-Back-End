@@ -11,7 +11,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import com.potflesh.wenda.utils.WendaUtil;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -207,7 +206,7 @@ public class QuestionController {
 
         // 存放每个 question 和 对应 question 的话题类型
         List<Question> questionTopicList = questionService.getLastTopicQuestionList(tId, offset);
-        List< Map<String,Object> > vos = new ArrayList< Map<String,Object>>();
+        List< Map<String, Object> > vos = new ArrayList< Map<String,Object>>();
         for (Question question : questionTopicList){
             Map questionMap = new HashedMap();
             questionMap.put("question", question);

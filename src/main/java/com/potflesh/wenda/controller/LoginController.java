@@ -54,7 +54,6 @@ public class LoginController {
                 if (rememberme) {
                     cookie.setMaxAge(3600*24*5);
                 }
-
                 response.addCookie(cookie);
 
                 if (StringUtils.isNotBlank(next)) {

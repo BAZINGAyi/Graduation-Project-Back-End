@@ -33,7 +33,6 @@ public class LoginRequirementInterceptor implements HandlerInterceptor {
     @Override
     public void postHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, ModelAndView modelAndView) throws Exception {
 
-
     }
     // 渲染完成
     @Override
