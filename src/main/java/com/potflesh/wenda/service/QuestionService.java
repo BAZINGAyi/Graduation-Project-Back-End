@@ -48,4 +48,8 @@ public class QuestionService {
     public List<Question> getLastSearchQuestionList(String searchContent, int offset) {
         return questionDAO.selectLastQuestionQuestionListByTitle(searchContent, offset, 10);
     }
+
+    public List<Question> getQuestionsByUserIdList(List<Integer> questionIdList, int offset) {
+        return questionDAO.getQuestionsByUserIdList(questionIdList, offset, 10);
+    }
 }

@@ -39,4 +39,6 @@ public interface QuestionDAO {
     List<Question> selectLastQuestionQuestionListByTitle(@Param("title") String title,
                                                          @Param("offset") int offset,
                                                          @Param("limit") int limit);
+
+    List<Question> getQuestionsByUserIdList(List<Integer> questionIdList, int offset, int limit);
 }

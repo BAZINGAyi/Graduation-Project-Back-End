@@ -13,6 +13,7 @@ import java.util.List;
  */
 @Service
 public class CommentService {
+
     @Autowired
     CommentDAO commentDAO;
 
@@ -50,5 +51,9 @@ public class CommentService {
 
     public void deleteComment(int entityId,int entityType){
         commentDAO.updateStatus(entityId,entityType,1);
+    }
+
+    public List<Comment> getCommentsByUserid(int userId) {
+        return commentDAO.getCommentsByUserId(userId);
     }
 }

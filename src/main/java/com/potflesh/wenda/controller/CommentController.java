@@ -3,11 +3,10 @@ package com.potflesh.wenda.controller;
 import com.potflesh.wenda.async.EventModel;
 import com.potflesh.wenda.async.EventProducer;
 import com.potflesh.wenda.async.EventType;
-import com.potflesh.wenda.model.Comment;
-import com.potflesh.wenda.model.EntityType;
-import com.potflesh.wenda.model.HostHolder;
-import com.potflesh.wenda.service.CommentService;
-import com.potflesh.wenda.service.QuestionService;
+import com.potflesh.wenda.model.*;
+import com.potflesh.wenda.service.*;
+import com.potflesh.wenda.utils.RedisKeyUtil;
+import org.apache.commons.collections.map.HashedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,17 +15,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.potflesh.wenda.utils.WendaUtil;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by bazinga on 2017/4/15.
  */
 @Controller
 public class CommentController {
-
-    @Autowired
-    HostHolder hostHolder;
 
     @Autowired
     CommentService commentService;
@@ -36,6 +36,21 @@ public class CommentController {
 
     @Autowired
     EventProducer eventProducer;
+
+    @Autowired
+    FeedService feedService;
+
+    @Autowired
+    HostHolder hostHolder;
+
+    @Autowired
+    RedisService redisService;
+
+    @Autowired
+    FollowService followService;
+
+    @Autowired
+    UserService userService;
 
     private static final Logger logger= LoggerFactory.getLogger(CommentController.class);
 
@@ -106,5 +121,39 @@ public class CommentController {
         }
 
         return "";
+    }
+
+    /**
+     * 得到当前登陆用户评论的问题列表
+     */
+    @RequestMapping(path = {"/api/queryUserCommentQuestionList"},method ={RequestMethod.GET})
+    @ResponseBody
+    String getUserCommentQuestion(){
+        int localUserId = hostHolder.getUsers() == null ? 0 : hostHolder.getUsers().getId();
+        // 首先取出所有用户的评论
+        List<Comment> comments = new ArrayList<>();
+        if (localUserId != 0) {
+            comments = commentService.getCommentsByUserid(localUserId);
+        }
+        // 在这些评论中筛选出对问题的评论
+        List<Integer> questionIdList = new ArrayList<>();
+        for (int i = 0; i < comments.size(); i++) {
+            if (comments.get(i).getEntityType() == EntityType.ENTITY_QUESTION) {
+                questionIdList.add(comments.get(i).getEntityId());
+            }
+        }
+        // 取出这些问题
+        List<Map<String,Object>> vos = new ArrayList< Map<String,Object>>();
+        if (questionIdList.size() != 0) {
+            List<Question> questionList = questionService.getQuestionsByUserIdList(questionIdList, 10);
+            for (Question question : questionList){
+                Map vo = new HashedMap();
+                vo.put("question", question);
+                vo.put("followCount", followService.getFollowerCount(EntityType.ENTITY_QUESTION, question.getId()));
+                vo.put("user", userService.getUser(question.getUserId()));
+                vos.add(vo);
+            }
+        }
+        return WendaUtil.getJSONString(200, vos);
     }
 }
