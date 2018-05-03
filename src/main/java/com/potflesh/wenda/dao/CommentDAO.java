@@ -12,13 +12,13 @@ import java.util.List;
 public interface CommentDAO {
     String TABLE_NAME = " comment ";
 
-    String INSERT_FIELDS = " user_id, content, created_date, entity_id, entity_type, status ";
+    String INSERT_FIELDS = " user_id, content, created_date, entity_id, entity_type, status, markdown_content ";
 
     String SELECT_FIELDS = " id, " + INSERT_FIELDS;
 
     @Insert({"insert into " ,TABLE_NAME ,  "(",
 
-            INSERT_FIELDS, ") values(#{userId},#{content},#{createdDate},#{entityId},#{entityType},#{status})"})
+            INSERT_FIELDS, ") values(#{userId},#{content},#{createdDate},#{entityId},#{entityType},#{status},#{markdownContent})"})
 
     int addComment(Comment comment);
 

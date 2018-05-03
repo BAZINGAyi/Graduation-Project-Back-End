@@ -13,6 +13,15 @@ public class Comment {
     private String content;
     private Date createdDate;
     private int status;
+    private String markdownContent;
+
+    public String getMarkdownContent() {
+        return markdownContent;
+    }
+
+    public void setMarkdownContent(String markdownContent) {
+        this.markdownContent = markdownContent;
+    }
 
     public int getId() {
         return id;

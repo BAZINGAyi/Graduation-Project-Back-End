@@ -11,11 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import com.potflesh.wenda.utils.WendaUtil;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -68,6 +65,48 @@ public class CommentController {
             } else {
                 comment.setUserId(WendaUtil.Anonymous_USERID);
             }
+            comment.setEntityId(questionId);
+            comment.setEntityType(EntityType.ENTITY_QUESTION);
+            commentService.addComment(comment);
+            // 这块应该使用数据库的事务操作
+            int count = commentService.getCommentCount(comment.getEntityId(),comment.getEntityType());
+            questionService.updateCommentCount(questionId,count);
+
+            // 给发表该评论的用户的粉丝发送新鲜事
+            eventProducer.fireEvent(new EventModel(EventType.COMMENT_MyFans)
+                    .setActorId(comment.getUserId())
+                    .setEntityId(questionId));
+
+            // 给关注该问题的用户发表评论
+            eventProducer.fireEvent(new EventModel(EventType.COMMENT_Focus_Question)
+                    .setActorId(comment.getUserId())
+                    .setEntityId(questionId));
+
+        }catch (Exception e){
+            logger.error("增加评论失败" + e.getMessage());
+        }
+
+        return "redirect:/question/" + questionId;
+    }
+
+    @RequestMapping(path = {"/addQuestionComment"},method ={RequestMethod.POST})
+    public String addQuestionComment(@RequestBody Map<String, Object> reqMap){
+
+        String commentContent = reqMap.get("content").toString();
+        String commentMarkdown = reqMap.get("markdownContent").toString();
+        int questionId = Integer.valueOf(reqMap.get("questionId").toString());
+
+        try {
+
+            Comment comment = new Comment();
+            comment.setContent(commentContent);
+            comment.setCreatedDate(new Date());
+            if (hostHolder != null) {
+                comment.setUserId(hostHolder.getUsers().getId());
+            } else {
+                comment.setUserId(WendaUtil.Anonymous_USERID);
+            }
+            comment.setMarkdownContent(commentMarkdown);
             comment.setEntityId(questionId);
             comment.setEntityType(EntityType.ENTITY_QUESTION);
             commentService.addComment(comment);
