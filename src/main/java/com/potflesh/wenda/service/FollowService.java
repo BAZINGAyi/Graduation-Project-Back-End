@@ -28,6 +28,7 @@ public class FollowService {
 
     public boolean follow(int userId, int entityId,int entityType){
         String followerKey = RedisKeyUtil.getFollowerKey(entityType, entityId);
+        // 好像放错了这里
         String followeeKey = RedisKeyUtil.getFolloweeKey(userId, entityType);
         Date date = new Date();
         // 实体的粉丝增加当前用户

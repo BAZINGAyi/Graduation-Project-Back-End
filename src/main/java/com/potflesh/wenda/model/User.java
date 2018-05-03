@@ -15,6 +15,26 @@ public class User {
 
     private String headUrl;
 
+    private String mail;
+
+    private String describe;
+
+    public String getMail() {
+        return mail;
+    }
+
+    public void setMail(String mail) {
+        this.mail = mail;
+    }
+
+    public String getDescribe() {
+        return describe;
+    }
+
+    public void setDescribe(String describe) {
+        this.describe = describe;
+    }
+
     public int getId() {
         return id;
     }

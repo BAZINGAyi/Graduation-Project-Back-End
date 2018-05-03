@@ -32,7 +32,7 @@ public class UserService {
         return userDAO.selectByname(name);
     }
 
-    public Map<String,String> register(String name , String password){
+    public Map<String,String> register(String name , String password, String mail, String describe){
 
         Map<String,String> map = new HashedMap();
 
@@ -58,6 +58,8 @@ public class UserService {
         user.setHeadUrl(String.format("http://images.nowcoder.com/head/%dt.png",
                 new Random().nextInt(1000)));
         user.setPassword(WendaUtil.MD5(password+user.getSalt()));
+        user.setDescribe(describe);
+        user.setMail(mail);
         userDAO.addUser(user);
 
         // 第一次登录就下发 ticket

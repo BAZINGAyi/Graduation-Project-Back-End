@@ -128,8 +128,9 @@ public class CommentController {
      */
     @RequestMapping(path = {"/api/queryUserCommentQuestionList"},method ={RequestMethod.GET})
     @ResponseBody
-    String getUserCommentQuestion(){
+    String getUserCommentQuestion(@RequestParam("offset") int offset){
         int localUserId = hostHolder.getUsers() == null ? 0 : hostHolder.getUsers().getId();
+        System.out.println(localUserId + "用户已经登录");
         // 首先取出所有用户的评论
         List<Comment> comments = new ArrayList<>();
         if (localUserId != 0) {
@@ -145,7 +146,7 @@ public class CommentController {
         // 取出这些问题
         List<Map<String,Object>> vos = new ArrayList< Map<String,Object>>();
         if (questionIdList.size() != 0) {
-            List<Question> questionList = questionService.getQuestionsByUserIdList(questionIdList, 10);
+            List<Question> questionList = questionService.getQuestionsByUserIdList(questionIdList, offset);
             for (Question question : questionList){
                 Map vo = new HashedMap();
                 vo.put("question", question);

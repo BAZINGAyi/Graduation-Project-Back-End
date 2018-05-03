@@ -1,4 +1,5 @@
 package com.potflesh.wenda.controller;
+import com.alibaba.fastjson.JSON;
 import com.potflesh.wenda.model.EntityType;
 import com.potflesh.wenda.model.Feed;
 import com.potflesh.wenda.model.HostHolder;
@@ -77,7 +78,24 @@ public class FeedController {
         }
         // 未登录则获取最近所有用户的 feed
         List<Feed> feeds = feedService.getUserFeeds(Integer.MAX_VALUE,followees,10);
-        maps.put("feeds",feeds);
+        List<Map<String, Object>> feedsListMap = new ArrayList<>();
+        // 将序列化的feed信息换成 json 格式
+        for (int i = 0; i<feeds.size(); i++) {
+            Map<String,Object> feedMap = new HashedMap();
+            feedMap.put("createdDate",feeds.get(i).getCreatedDate());
+            feedMap.put("id",feeds.get(i).getId());
+            feedMap.put("type",feeds.get(i).getType());
+            feedMap.put("userId",feeds.get(i).getUserId());
+            Map<String,Object> feedContentMap = new HashedMap();
+            feedContentMap.put("userId",feeds.get(i).get("userId"));
+            feedContentMap.put("userName",feeds.get(i).get("userName"));
+            feedContentMap.put("userHead",feeds.get(i).get("userId"));
+            feedContentMap.put("questionTitle",feeds.get(i).get("questionTitle"));
+            feedContentMap.put("questionId",feeds.get(i).get("questionId"));
+            feedMap.put("data", feedContentMap);
+            feedsListMap.add(feedMap);
+        }
+        maps.put("feeds",feedsListMap);
 
         if (feeds != null && feeds.size() != 0) {
             return WendaUtil.getJSONString(200, maps);

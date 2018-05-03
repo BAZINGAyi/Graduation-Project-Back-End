@@ -11,7 +11,7 @@ public interface UserDAO {
 
     String TABLE_NAME = " user ";
 
-    String INSERT_FIELDS = " name, password, salt, head_url ";
+    String INSERT_FIELDS = " name, password, salt, head_url, mail, user_describe ";
 
     String SELECT_FIELDS = " id, " + INSERT_FIELDS;
 

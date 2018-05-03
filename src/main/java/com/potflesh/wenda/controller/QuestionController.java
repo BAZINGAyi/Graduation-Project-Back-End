@@ -217,4 +217,30 @@ public class QuestionController {
 
         return WendaUtil.getJSONString(1, vos);
     }
+
+    /**
+     * 得到当前登陆用户发布的问题列表
+     */
+    @RequestMapping(path = {"/api/LoginUserQuestionList"},method ={RequestMethod.GET})
+    @ResponseBody
+    String getLoginUserQuestionList(@RequestParam("offset") int offset){
+        int localUserId = hostHolder.getUsers() == null ? 0 : hostHolder.getUsers().getId();
+        List< Map<String,Object> > vos = new ArrayList< Map<String,Object>>();
+        // 用户已经登录
+        if (localUserId != 0) {
+            List<Question> questionList = new ArrayList<>();
+            questionList = questionService.getLatestQuestions(localUserId, offset, 10);
+            for (Question question : questionList){
+                Map vo = new HashedMap();
+
+                vo.put("question", question);
+                vo.put("followCount", followService.getFollowerCount(EntityType.ENTITY_QUESTION, question.getId()));
+                vo.put("user", userService.getUser(question.getUserId()));
+
+                vos.add(vo);
+            }
+            return WendaUtil.getJSONString(200, vos);
+        }
+        return WendaUtil.getJsonString(200,"您未登录");
+    }
 }

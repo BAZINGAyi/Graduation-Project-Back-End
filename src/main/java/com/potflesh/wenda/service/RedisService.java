@@ -66,6 +66,7 @@ public class RedisService implements InitializingBean{
         }
         return 0;
     }
+
     // 返回多少人
     public long scard(String key){
         Jedis jedis = null;
@@ -294,5 +295,24 @@ public class RedisService implements InitializingBean{
         return null;
     }
 
+    /**
+     * 取出输入 key 值相似的一部分
+     * @param partOfKey
+     * @return
+     */
+    public Set<String> getKeys(String partOfKey) {
+        Jedis jedis = null;
+        try {
+            jedis = jedisPool.getResource();
+            return jedis.keys(partOfKey);
+        } catch (Exception e) {
+            logger.error("发生异常" + e.getMessage());
+        } finally {
+            if (jedis != null) {
+                jedis.close();
+            }
+        }
+        return null;
+    }
 
 }

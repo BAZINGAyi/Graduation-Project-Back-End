@@ -172,4 +172,12 @@ public class FollowController {
         }
         return userInfos;
     }
+
+    /**
+     * 得到登录用户关注的那些问题
+     * @return
+     */
+    String getUserFollowQuestion() {
+        return "";
+    }
 }

@@ -41,4 +41,6 @@ public interface QuestionDAO {
                                                          @Param("limit") int limit);
 
     List<Question> getQuestionsByUserIdList(List<Integer> questionIdList, int offset, int limit);
+
+    List<Question> getQuestionsByUserId(@Param("userId") int id, @Param("offset") int offset, @Param("limit") int limit);
 }
