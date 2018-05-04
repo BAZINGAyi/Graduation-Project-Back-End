@@ -18,13 +18,18 @@ public class LikeService {
         return redisService.scard(likeKey);
     }
 
+    public long getDisLikeCount(int entityType, int entityId) {
+        String dislikeKey = RedisKeyUtil.getDisLikeKey(entityType, entityId);
+        return redisService.scard(dislikeKey);
+    }
+
     public int getLikeStatus(int userId, int entityType, int entityId) {
         String likeKey = RedisKeyUtil.getLikeKey(entityType, entityId);
        // 如果在喜欢的集合里返回 1
        if (redisService.sismember(likeKey, String.valueOf(userId))) {
             return 1;
         }
-        // 如果在不喜欢的集合里返回 0 都不在返回 -1
+        // 如果在不喜欢的集合里返回 -1 都不在返回 0
         String disLikeKey = RedisKeyUtil.getDisLikeKey(entityType, entityId);
         return redisService.sismember(disLikeKey, String.valueOf(userId)) ? -1 : 0;
     }

@@ -54,7 +54,7 @@ public class FollowService {
         Date date = new Date();
         Jedis jedis = redisService.getJedis();
         Transaction tx = redisService.multi(jedis);
-        // 实体的粉丝增加当前用户
+        // 实体的粉丝减去当前用户
         tx.zrem(followerKey, String.valueOf(userId));
         // 当前用户对这类实体关注-1
         tx.zrem(followeeKey, String.valueOf(entityId));

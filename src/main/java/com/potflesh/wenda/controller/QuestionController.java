@@ -126,6 +126,8 @@ public class QuestionController {
         return "detail";
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////// API INTERFACE ////////////////////////////////////////////////////////////////
+
     @RequestMapping(value = "api/question")
     @ResponseBody
     public String getQuestionDetail(Model model ,
@@ -173,7 +175,7 @@ public class QuestionController {
             Map<String, Object> commentNew = new HashedMap();
             commentNew.put("comment", commentMap);
 
-            // 用户对该问题点赞
+            // 用户是否对该评论点赞或点踩
             if (hostHolder.getUsers() == null) {
                 commentNew.put("liked", 0);
             } else {
@@ -182,6 +184,7 @@ public class QuestionController {
 
             // 该评论点赞的数量
             commentNew.put("likeCount", likeService.getLikeCount(EntityType.ENTITY_COMMENT, comment.getId()));
+            commentNew.put("dislikeCount", likeService.getDisLikeCount(EntityType.ENTITY_COMMENT, comment.getId()));
 
             // 该条评论是由哪个用户评论的
             commentNew.put("user",userService.getUser(comment.getUserId()));

@@ -44,12 +44,9 @@ public class LoginController {
             Map<String,String> map = userService.register(username,password,null,null);
 
             if (map.containsKey("ticket")) {
-
                 Cookie cookie =
                         new Cookie("ticket", map.get("ticket").toString());
-
                 cookie.setPath("/");
-
                 if (rememberme) {
                     cookie.setMaxAge(3600*24*5);
                 }
@@ -69,9 +66,7 @@ public class LoginController {
             }
 
         }catch (Exception e){
-
                 logger.error("注册异常" + e.getMessage());
-
                 return "login";
         }
     }

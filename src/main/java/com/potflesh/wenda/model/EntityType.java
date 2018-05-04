@@ -12,5 +12,4 @@ public class EntityType {
     public static int ENTITY_QUESTION = 1;
     public static int ENTITY_COMMENT = 2;
     public static int ENTITY_USER = 3;
-    // 可能会加入一个用户的关注的问题
 }

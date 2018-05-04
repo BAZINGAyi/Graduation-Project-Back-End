@@ -17,13 +17,13 @@ public class CheckLoginInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o) throws Exception {
 
-        String illehalUri = httpServletRequest.getQueryString();
+        String illegalUri = httpServletRequest.getQueryString();
 
         // 如果输入外部的非法链接，则跳回首页
 
-        if (illehalUri != null)
+        if (illegalUri != null)
 
-        if(illehalUri.contains("http"))
+        if(illegalUri.contains("http"))
 
             httpServletResponse.sendRedirect("/reglogin/");
 

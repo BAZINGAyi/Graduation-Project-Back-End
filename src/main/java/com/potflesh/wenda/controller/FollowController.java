@@ -173,8 +173,64 @@ public class FollowController {
         return userInfos;
     }
 
+    /////////////////////////////////////////////////////////////////////////////// api interface ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    @RequestMapping(path = {"api/followQuestion"}, method = {RequestMethod.POST})
+    @ResponseBody
+    public String followQuestionAPI(@RequestBody Map<String, Object> reqMap) {
+
+        if (hostHolder.getUsers() == null) {
+            return WendaUtil.getJsonString(999, "请登录");
+        }
+
+        int questionId = Integer.valueOf(reqMap.get("questionId").toString());
+        Question q = questionService.selectById(questionId);
+        if (q == null) {
+            return WendaUtil.getJsonString(1, "问题不存在");
+        }
+
+        boolean ret = followService.follow(hostHolder.getUsers().getId(), questionId,EntityType.ENTITY_QUESTION);
+
+        eventProducer.fireEvent(new EventModel(EventType.FOLLOW)
+                .setActorId(hostHolder.getUsers().getId()).setEntityId(questionId)
+                .setEntityType(EntityType.ENTITY_QUESTION).setEntityOwnerId(q.getUserId()));
+
+        // 返回跟随后的信息，用于更新页面
+        Map<String, Object> info = new HashMap<>();
+        info.put("headUrl", hostHolder.getUsers().getHeadUrl());
+        info.put("name", hostHolder.getUsers().getName());
+        info.put("id", hostHolder.getUsers().getId());
+        info.put("count", followService.getFollowerCount(EntityType.ENTITY_QUESTION, questionId));
+        return WendaUtil.getJSONString(ret ? 200 : 1, info);
+    }
+
+    @RequestMapping(path = {"api/unfollowQuestion"}, method = {RequestMethod.POST})
+    @ResponseBody
+    public String unfollowQuestioAPI(@RequestBody Map<String, Object> reqMap) {
+        if (hostHolder.getUsers() == null) {
+            return WendaUtil.getJsonString(999);
+        }
+
+        int questionId = Integer.valueOf(reqMap.get("questionId").toString());
+        Question q = questionService.selectById(questionId);
+        if (q == null) {
+            return WendaUtil.getJsonString(1, "问题不存在");
+        }
+
+        boolean ret = followService.unfollow(hostHolder.getUsers().getId(), EntityType.ENTITY_QUESTION, questionId);
+
+        eventProducer.fireEvent(new EventModel(EventType.UNFOLLOW)
+                .setActorId(hostHolder.getUsers().getId()).setEntityId(questionId)
+                .setEntityType(EntityType.ENTITY_QUESTION).setEntityOwnerId(q.getUserId()));
+
+        Map<String, Object> info = new HashMap<>();
+        info.put("id", hostHolder.getUsers().getId());
+        info.put("count", followService.getFollowerCount(EntityType.ENTITY_QUESTION, questionId));
+        return WendaUtil.getJSONString(ret ? 200 : 1, info);
+    }
+
     /**
-     * 得到登录用户关注的那些问题
+     * 得到登录用户关注的问题
      * @return
      */
     String getUserFollowQuestion() {

@@ -99,15 +99,11 @@ public class HomeController {
         List< Map<String,Object> > vos = new ArrayList< Map<String,Object>>();
 
         for (Question question : questionList){
-
             Map vo = new HashedMap();
-
             vo.put("question", question);
             vo.put("followCount", followService.getFollowerCount(EntityType.ENTITY_QUESTION, question.getId()));
             vo.put("user", userService.getUser(question.getUserId()));
-
             vos.add(vo);
-
         }
 
         return WendaUtil.getJSONString(200, vos);
