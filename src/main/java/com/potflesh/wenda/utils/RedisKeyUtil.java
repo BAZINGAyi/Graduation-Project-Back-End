@@ -40,7 +40,7 @@ public class RedisKeyUtil {
 
     // 每个用户对某类实体的关注key
     public static String getFolloweeKey(int userId, int entityType) {
-        return BIZ_FOLLOWEE + SPLIT + String.valueOf(userId) + SPLIT + String.valueOf(entityType);
+        return BIZ_FOLLOWEE + SPLIT + String.valueOf(entityType) + SPLIT + String.valueOf(userId);
     }
 
     public static String getTimelineKey(int userId) {
