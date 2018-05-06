@@ -246,4 +246,44 @@ public class QuestionController {
         }
         return WendaUtil.getJsonString(200,"您未登录");
     }
+
+    /**
+     * 添加问题
+     */
+    @RequestMapping(value = "api/question/add",method={RequestMethod.POST})
+    @ResponseBody
+    public String createQuestion(@RequestBody Map<String, Object> reqMap){
+
+        try{
+
+            String title = reqMap.get("title").toString();
+            String content = reqMap.get("content").toString();
+            String markdownContent = reqMap.get("markdownContent").toString();
+            String topicId = reqMap.get("topicId").toString();
+
+            Question question = new Question();
+            question.setTitle(title);
+            question.setContent(content);
+            question.setCreatedDate(new Date());
+            question.setMarkdownContent(markdownContent);
+            question.setTopicId(Integer.valueOf(topicId));
+            if(hostHolder.getUsers() != null)
+                question.setUserId(hostHolder.getUsers().getId());
+            else{
+                //999 返回到登录页面
+                return WendaUtil.getJsonString(200,"请登录后再发表问题");
+                // question.setUserId(WendaUtil.Anonymous_USERID);
+            }
+
+            if(questionService.addQuestion(question) > 0){
+                // 成功返回 0
+                return WendaUtil.getJsonString(200, "添加成功");
+            }
+
+        }catch (Exception e){
+            logger.error("增加题目失败" + e.getMessage());
+        }
+        // 失败返回 1
+        return WendaUtil.getJsonString(200, "添加失败");
+    }
 }

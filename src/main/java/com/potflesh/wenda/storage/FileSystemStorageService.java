@@ -42,10 +42,11 @@ public class FileSystemStorageService implements StorageService {
                                 + filename);
             }
             try (InputStream inputStream = file.getInputStream()) {
-                Path destinationFiles = this.rootLocation.resolve(TimeUtil.getCurrentTimeUsingCalendar() + filename);
+                String newFileName = TimeUtil.getCurrentTimeUsingDate() + filename;
+                Path destinationFiles = this.rootLocation.resolve(newFileName);
                 Files.copy(inputStream, destinationFiles,
                     StandardCopyOption.REPLACE_EXISTING);
-                return filename;
+                return newFileName;
             }
         }
         catch (IOException e) {

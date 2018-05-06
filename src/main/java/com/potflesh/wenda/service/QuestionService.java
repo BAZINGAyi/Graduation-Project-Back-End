@@ -30,6 +30,7 @@ public class QuestionService {
         question.setTitle(HtmlUtils.htmlEscape(question.getTitle()));
         question.setContent(sensitiveService.filter(question.getContent()));
         question.setTitle(sensitiveService.filter(question.getTitle()));
+        question.setMarkdownContent(sensitiveService.filter(question.getMarkdownContent()));
         return questionDAO.addQuestion(question) > 0 ? question.getId():0;
     }
 

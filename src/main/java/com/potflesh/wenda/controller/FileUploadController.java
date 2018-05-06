@@ -100,7 +100,7 @@ public class FileUploadController {
         return "uploadForm";
     }
 
-    @RequestMapping("/files/{filename:.+}")
+    @RequestMapping("api/files/{filename:.+}")
     @ResponseBody
     public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
 
@@ -113,7 +113,10 @@ public class FileUploadController {
     public String handleFileUpload(@RequestParam("editormd-image-file")MultipartFile file,
                                    @RequestParam("dialog_id") String dialogId,
                                    RedirectAttributes redirectAttributes) {
-        String filePath = storageService.store(file);
+        // 用于显示图片的路径
+        String onloadFileUrl = "api" + "/" + "files" + "/";
+        // 拼接成要显示图片的路径
+        String filePath = onloadFileUrl + storageService.store(file);
         redirectAttributes.addAttribute("dialog_id", dialogId);
         redirectAttributes.addAttribute("message", "hello");
         if (filePath != null) {

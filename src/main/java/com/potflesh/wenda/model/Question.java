@@ -21,6 +21,26 @@ public class Question {
 
     private int topicId;
 
+    private String markdownContent;
+
+    private int status;
+
+    public String getMarkdownContent() {
+        return markdownContent;
+    }
+
+    public void setMarkdownContent(String markdownContent) {
+        this.markdownContent = markdownContent;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
     public int getTopicId() {
         return topicId;
     }
