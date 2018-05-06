@@ -149,7 +149,7 @@ public class QuestionController {
         // 获取对问题的评论,注意是对问题的评论数据, type = 1
         List<Comment> questionCommentList = commentService.getCommentsByEntity(question.getId(), EntityType.ENTITY_QUESTION);
 
-        // 定义一个用于保存对每个问题评论的结构信息，包含该发布该评论的用户信息，该条评论信息，该条评论评论的信息，该条评论点赞的数量，登录的用户是否对该问题进行点赞
+        // 定义一个用于保存对每个问题评论的结构信息，包含该发布该评论的用户信息，该条评论信息，该条评论评论的信息，该条评论点赞的数量，登录的用户是否对该问题进行点赞q
         List<Map<String, Object>> singleComments = new ArrayList<>();
         for (Comment comment: questionCommentList){
 

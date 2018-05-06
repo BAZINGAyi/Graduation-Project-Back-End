@@ -3,6 +3,8 @@ package com.potflesh.wenda.dao;
 import com.potflesh.wenda.model.User;
 import org.apache.ibatis.annotations.*;
 
+import java.util.List;
+
 /**
  * Created by bazinga on 2017/4/9.
  */
@@ -34,4 +36,8 @@ public interface UserDAO {
     @Select({"select",SELECT_FIELDS," from", TABLE_NAME,
     " where name = #{name}"})
     User selectByname(String name);
+
+    List<User> selectUserListByName(@Param("name") String name,
+                                    @Param("offset") int offset,
+                                    @Param("limit") int limit);
 }

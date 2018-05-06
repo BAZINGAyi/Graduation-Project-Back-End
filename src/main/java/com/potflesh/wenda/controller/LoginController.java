@@ -1,6 +1,8 @@
 package com.potflesh.wenda.controller;
 
 import com.potflesh.wenda.async.EventProducer;
+import com.potflesh.wenda.dao.LoginTicketDAO;
+import com.potflesh.wenda.model.LoginTicket;
 import com.potflesh.wenda.service.UserService;
 import com.potflesh.wenda.utils.WendaUtil;
 import org.apache.commons.collections.map.HashedMap;
@@ -134,6 +136,9 @@ public class LoginController {
         userService.logout(ticket);
         return "redirect:/";
     }
+
+
+////////////////////////////////////////////////////////////////////////// api interface ////////////////////////////////////////////////////
 
     // 登录
     @RequestMapping(path = {"api/login/"}, method = {RequestMethod.POST})

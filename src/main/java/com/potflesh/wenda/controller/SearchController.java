@@ -2,6 +2,7 @@ package com.potflesh.wenda.controller;
 
 import com.potflesh.wenda.model.EntityType;
 import com.potflesh.wenda.model.Question;
+import com.potflesh.wenda.model.User;
 import com.potflesh.wenda.service.FollowService;
 import com.potflesh.wenda.service.QuestionService;
 import com.potflesh.wenda.service.UserService;
@@ -48,6 +49,18 @@ public class SearchController {
             vos.add(questionMap);
         }
 
+        return WendaUtil.getJSONString(1, vos);
+    }
+
+    @RequestMapping(value = "api/getSearchUserList")
+    @ResponseBody
+    String getSearchUserList(@RequestParam("username")String username,
+                                 @RequestParam("offset")int offset) {
+
+        // 存放每个 question 和 对应 question 的话题类型
+        List<User> userList = userService.getLastSearchUserList(username, offset);
+        Map<String,Object> vos = new HashedMap();
+        vos.put("userList", userList);
         return WendaUtil.getJSONString(1, vos);
     }
 }
