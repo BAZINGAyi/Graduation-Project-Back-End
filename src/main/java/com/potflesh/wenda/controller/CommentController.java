@@ -14,10 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import com.potflesh.wenda.utils.WendaUtil;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by bazinga on 2017/4/15.
@@ -131,15 +128,66 @@ public class CommentController {
         return "redirect:/question/" + questionId;
     }
 
+    ////////////////////////////////////////////////////////////////////////// api interface /////////////////////////////////////////////////////////////////////////////////////////////
+
+    @RequestMapping(path = {"api/addQuestionComment"},method ={RequestMethod.POST})
+    @ResponseBody
+    public String addQuestionCommentAPI(@RequestBody Map<String, Object> reqMap){
+
+        String commentContent = reqMap.get("content").toString();
+        String commentMarkdown = reqMap.get("markdownContent").toString();
+        int questionId = Integer.valueOf(reqMap.get("questionId").toString());
+        Map<String,Object> map = new HashMap<>();
+
+        try {
+
+            Comment comment = new Comment();
+            comment.setContent(commentContent);
+            comment.setCreatedDate(new Date());
+            if (hostHolder != null) {
+                comment.setUserId(hostHolder.getUsers().getId());
+            } else {
+                comment.setUserId(WendaUtil.Anonymous_USERID);
+            }
+            comment.setMarkdownContent(commentMarkdown);
+            comment.setEntityId(questionId);
+            comment.setEntityType(EntityType.ENTITY_QUESTION);
+            commentService.addComment(comment);
+            // 这块应该使用数据库的事务操作
+            int count = commentService.getCommentCount(comment.getEntityId(),comment.getEntityType());
+            questionService.updateCommentCount(questionId,count);
+
+            // 给发表该评论的用户的粉丝发送新鲜事
+            eventProducer.fireEvent(new EventModel(EventType.COMMENT_MyFans)
+                    .setActorId(comment.getUserId())
+                    .setEntityId(questionId));
+
+            // 给关注该问题的用户发表评论
+            eventProducer.fireEvent(new EventModel(EventType.COMMENT_Focus_Question)
+                    .setActorId(comment.getUserId())
+                    .setEntityId(questionId));
+
+            map.put("msg","回答成功");
+            map.put("status","success");
+            return WendaUtil.getJSONString(200, map);
+
+        }catch (Exception e){
+            logger.error("增加评论失败" + e.getMessage());
+        }
+
+        map.put("msg","回答失败");
+        map.put("status","fail");
+        return WendaUtil.getJSONString(999, map);
+    }
+
     /**
      * 对评论内容进行评论
-     * @param commentId
-     * @param content
      * @return
      */
-    @RequestMapping(path = {"/api/addCommentToComment"},method ={RequestMethod.POST})
-    public String addCommentToComment(@RequestParam("commentId") int commentId,
-                                      @RequestParam("content") String content) {
+    @RequestMapping(path = {"/api/addCommentOfComment"},method ={RequestMethod.POST})
+    public String addCommentToComment(@RequestBody Map<String, Object> reqMap) {
+        String content = reqMap.get("content").toString();
+        int commentId = Integer.valueOf(reqMap.get("commentId").toString());
         try {
             Comment comment = new Comment();
             comment.setContent(content);

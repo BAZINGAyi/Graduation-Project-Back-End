@@ -11,10 +11,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import com.potflesh.wenda.utils.WendaUtil;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 
 /**
  * Created by bazinga on 2017/4/13.
@@ -267,17 +265,23 @@ public class QuestionController {
             question.setCreatedDate(new Date());
             question.setMarkdownContent(markdownContent);
             question.setTopicId(Integer.valueOf(topicId));
+
+            Map<String,Object> map = new HashMap<>();
             if(hostHolder.getUsers() != null)
                 question.setUserId(hostHolder.getUsers().getId());
             else{
+                map.put("msg","请登录后再发表问题");
+                map.put("status","fail");
                 //999 返回到登录页面
-                return WendaUtil.getJsonString(200,"请登录后再发表问题");
+                return WendaUtil.getJSONString(999,map);
                 // question.setUserId(WendaUtil.Anonymous_USERID);
             }
 
             if(questionService.addQuestion(question) > 0){
                 // 成功返回 0
-                return WendaUtil.getJsonString(200, "添加成功");
+                map.put("msg","提问成功");
+                map.put("status","success");
+                return WendaUtil.getJSONString(200, map);
             }
 
         }catch (Exception e){

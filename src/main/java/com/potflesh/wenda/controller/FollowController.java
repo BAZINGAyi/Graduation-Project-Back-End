@@ -189,7 +189,7 @@ public class FollowController {
             return WendaUtil.getJsonString(1, "问题不存在");
         }
 
-        boolean ret = followService.follow(hostHolder.getUsers().getId(), questionId,EntityType.ENTITY_QUESTION);
+        boolean ret = followService.follow(hostHolder.getUsers().getId(), questionId, EntityType.ENTITY_QUESTION);
 
         eventProducer.fireEvent(new EventModel(EventType.FOLLOW)
                 .setActorId(hostHolder.getUsers().getId()).setEntityId(questionId)

@@ -12,7 +12,6 @@ public class LikeService {
     @Autowired
     RedisService redisService;
 
-
     public long getLikeCount(int entityType, int entityId) {
         String likeKey = RedisKeyUtil.getLikeKey(entityType, entityId);
         return redisService.scard(likeKey);

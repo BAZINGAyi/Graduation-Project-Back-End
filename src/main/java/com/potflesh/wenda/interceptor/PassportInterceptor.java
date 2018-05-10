@@ -6,6 +6,7 @@ import com.potflesh.wenda.model.LoginTicket;
 import com.potflesh.wenda.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -13,6 +14,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
+import java.util.Enumeration;
+import java.util.Map;
 
 /**
  * Created by bazinga on 2017/4/12.
@@ -31,7 +34,9 @@ public class PassportInterceptor implements HandlerInterceptor {
 
     // 所有http请求开始之前，false 代表失败
     @Override
-    public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o) throws Exception {
+    public boolean preHandle(HttpServletRequest httpServletRequest,
+                             HttpServletResponse httpServletResponse,
+                             Object o) throws Exception {
 
         String ticket = null;
 
@@ -44,17 +49,21 @@ public class PassportInterceptor implements HandlerInterceptor {
             }
         }
 
-        if(ticket!=null){
+        if (ticket == null) {
+            ticket = httpServletRequest.getHeader("token");
+        }
+
+        if(ticket != null){
             LoginTicket loginTicket = loginTicketDAO.selectByTicket(ticket);
             // ticket 过期或者状态是无效的
-            if(loginTicket == null || loginTicket.getExpired().before(new Date())
-        ||loginTicket.getStatus()!=0){
+            if(loginTicket == null || loginTicket.getExpired().before(new Date()) || loginTicket.getStatus() != 0){
                 return true;
             }
             // ticket 没问题 将 user 的信息保存在 Hostholder，可以随时访问
             User user = userDAO.selectById(loginTicketDAO.selectByTicket(ticket).getUserId());
-
             hostHolder.setUsers(user);
+
+            System.out.println("用户已经登录" + user.getName());
         }
 
 
