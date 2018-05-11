@@ -3,6 +3,7 @@ import com.potflesh.wenda.model.Question;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by bazinga on 2017/4/9.
@@ -40,7 +41,9 @@ public interface QuestionDAO {
                                                          @Param("offset") int offset,
                                                          @Param("limit") int limit);
 
-    List<Question> getQuestionsByUserIdList(List<Integer> questionIdList, int offset, int limit);
+    List<Question> getQuestionsByUserIdList(@Param("questionIdList") Set<Integer> questionIdList,
+                                            @Param("offset")int offset,
+                                            @Param("limit")int limit);
 
     List<Question> getQuestionsByUserId(@Param("userId") int id, @Param("offset") int offset, @Param("limit") int limit);
 }

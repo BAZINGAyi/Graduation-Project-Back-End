@@ -144,8 +144,6 @@ public class LoginController {
     @RequestMapping(path = {"api/login/"}, method = {RequestMethod.POST})
     @ResponseBody
     public String userLogin(@RequestBody Map<String, Object> reqMap,
-                        @RequestParam(value="next", required = false) String next,
-                        @RequestParam(value = "rememberme",defaultValue = "false") boolean rememberme,
                         HttpServletResponse response) {
         try {
             String username = reqMap.get("username").toString();
@@ -162,7 +160,8 @@ public class LoginController {
                 msgMaps.put("status", "success");
                 msgMaps.put("msg", "登录成功");
                 msgMaps.put("user", userService.selectByName(username));
-                msgMaps.put("token", map.get("ticket"));
+                msgMaps.put("token", map.get("ticket").toString());
+                System.out.println("login:" + map.get("ticket").toString());
                 return WendaUtil.getJSONString(200, msgMaps);
             } else {
                 // 登录失败

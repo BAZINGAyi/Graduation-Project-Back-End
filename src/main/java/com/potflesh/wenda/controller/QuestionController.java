@@ -3,6 +3,7 @@ package com.potflesh.wenda.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.potflesh.wenda.model.*;
 import com.potflesh.wenda.service.*;
+import com.potflesh.wenda.utils.HttpStatusCode;
 import org.apache.commons.collections.map.HashedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -193,11 +194,12 @@ public class QuestionController {
         // 获取查看的用户是否已经关注问题
         if (hostHolder.getUsers() != null) {
             questionJson.put("followed", followService.isFollower(hostHolder.getUsers().getId(), EntityType.ENTITY_QUESTION, qid));
+            return WendaUtil.getJSONString(HttpStatusCode.SUCCESS_STATUS, questionJson);
         } else {
             questionJson.put("followed", false);
+            return WendaUtil.getJSONString(HttpStatusCode.Unauthorized, questionJson);
         }
 
-       return WendaUtil.getJSONString(1,questionJson);
     }
 
     @RequestMapping(value = "api/getTopicQuestion")
@@ -242,7 +244,7 @@ public class QuestionController {
             }
             return WendaUtil.getJSONString(200, vos);
         }
-        return WendaUtil.getJsonString(200,"您未登录");
+        return WendaUtil.getJsonString(999,"您未登录");
     }
 
     /**

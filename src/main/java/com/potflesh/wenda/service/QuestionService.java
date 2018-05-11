@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by bazinga on 2017/4/10.
@@ -50,7 +51,7 @@ public class QuestionService {
         return questionDAO.selectLastQuestionQuestionListByTitle(searchContent, offset, 10);
     }
 
-    public List<Question> getQuestionsByUserIdList(List<Integer> questionIdList, int offset) {
+    public List<Question> getQuestionsByUserIdList(Set<Integer> questionIdList, int offset) {
         return questionDAO.getQuestionsByUserIdList(questionIdList, offset, 10);
     }
 }

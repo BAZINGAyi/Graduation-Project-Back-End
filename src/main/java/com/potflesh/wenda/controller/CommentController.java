@@ -217,14 +217,13 @@ public class CommentController {
     @ResponseBody
     String getUserCommentQuestion(@RequestParam("offset") int offset){
         int localUserId = hostHolder.getUsers() == null ? 0 : hostHolder.getUsers().getId();
-        System.out.println(localUserId + "用户已经登录");
-        // 首先取出所有用户的评论
+        // 首先取出用户该用户的所有评论
         List<Comment> comments = new ArrayList<>();
         if (localUserId != 0) {
             comments = commentService.getCommentsByUserid(localUserId);
         }
         // 在这些评论中筛选出对问题的评论
-        List<Integer> questionIdList = new ArrayList<>();
+        Set<Integer> questionIdList = new HashSet<>();
         for (int i = 0; i < comments.size(); i++) {
             if (comments.get(i).getEntityType() == EntityType.ENTITY_QUESTION) {
                 questionIdList.add(comments.get(i).getEntityId());

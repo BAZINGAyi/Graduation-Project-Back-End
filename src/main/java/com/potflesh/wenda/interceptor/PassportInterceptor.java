@@ -40,7 +40,12 @@ public class PassportInterceptor implements HandlerInterceptor {
 
         String ticket = null;
 
-        if(httpServletRequest.getCookies() != null){
+        if (ticket == null) {
+            ticket = httpServletRequest.getHeader("token");
+            System.out.println("token:" + ticket);
+        }
+
+        if(ticket == null && httpServletRequest.getCookies() != null){
             for(Cookie cookie : httpServletRequest.getCookies()){
                 if(cookie.getName().equals("ticket")){
                    ticket = cookie.getValue();
@@ -49,14 +54,11 @@ public class PassportInterceptor implements HandlerInterceptor {
             }
         }
 
-        if (ticket == null) {
-            ticket = httpServletRequest.getHeader("token");
-        }
-
         if(ticket != null){
             LoginTicket loginTicket = loginTicketDAO.selectByTicket(ticket);
             // ticket 过期或者状态是无效的
             if(loginTicket == null || loginTicket.getExpired().before(new Date()) || loginTicket.getStatus() != 0){
+                System.out.println("用户token已过期");
                 return true;
             }
             // ticket 没问题 将 user 的信息保存在 Hostholder，可以随时访问
@@ -65,8 +67,6 @@ public class PassportInterceptor implements HandlerInterceptor {
 
             System.out.println("用户已经登录" + user.getName());
         }
-
-
 
         return true;
     }

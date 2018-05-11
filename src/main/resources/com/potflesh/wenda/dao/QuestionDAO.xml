@@ -54,7 +54,7 @@
         <include refid="table"/>
 
         <if test="questionIdList.size()!= 0">
-            AND id in
+            WHERE id in
             <foreach collection="questionIdList" index="index" item="item"
                      open="(" separator="," close=")">
                 #{item}
