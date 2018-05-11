@@ -150,24 +150,24 @@ public class QuestionController {
 
         // 定义一个用于保存对每个问题评论的结构信息，包含该发布该评论的用户信息，该条评论信息，该条评论评论的信息，该条评论点赞的数量，登录的用户是否对该问题进行点赞q
         List<Map<String, Object>> singleComments = new ArrayList<>();
-        for (Comment comment: questionCommentList){
+        for (Comment commentParent: questionCommentList){
 
             // 获取针对每个评论的评论，放到每条评论里
             Map<String, Object> commentMap = new HashedMap();
-            List<Comment> commentInCommentList = commentService.getCommentsByEntity(comment.getId(), EntityType.ENTITY_COMMENT);
+            List<Comment> commentSonList = commentService.getCommentsByEntity(commentParent.getId(), EntityType.ENTITY_COMMENT);
             List<Map<String, Object>> commentSonListMap = new ArrayList<>();
-            for (int i = 0 ; i < commentInCommentList.size(); i++) {
-                Map<String, Object> commentSon = new HashedMap();
-                commentSon.put("comment", commentInCommentList.get(i));
+            for (int i = 0; i < commentSonList.size(); i++) {
+                Map<String, Object> commentSonMap = new HashedMap();
+                commentSonMap.put("comment", commentSonList.get(i));
                 // 为每个评论添加相应的用户信息
-                commentSon.put("user", userService.getUser(commentInCommentList.get(i).getUserId()));
-                commentSonListMap.add(commentSon);
+                commentSonMap.put("user", userService.getUser(commentSonList.get(i).getUserId()));
+                commentSonListMap.add(commentSonMap);
             }
             commentMap.put("commentSon", commentSonListMap);
 
-            int commentInCommentCount = commentService.getCommentInCommentCount(comment.getId());
+            int commentInCommentCount = commentService.getCommentInCommentCount(commentParent.getId());
             // 该条问题的一个评论
-            commentMap.put("commentParent",comment);
+            commentMap.put("commentParent", commentParent);
             commentMap.put("commentInCommentCount", commentInCommentCount);
 
             // 定义一个包含该条评论的有关的所有需要的信息
@@ -178,15 +178,26 @@ public class QuestionController {
             if (hostHolder.getUsers() == null) {
                 commentNew.put("liked", 0);
             } else {
-                commentNew.put("liked", likeService.getLikeStatus(hostHolder.getUsers().getId(), EntityType.ENTITY_COMMENT, comment.getId()));
+                commentNew.put("liked", likeService.getLikeStatus(hostHolder.getUsers().getId(), EntityType.ENTITY_COMMENT, commentParent.getId()));
+            }
+
+            // 标识这条评论是否是由登录用户评论的
+            if (hostHolder.getUsers() == null) {
+                commentNew.put("parentCommentIsUser", false);
+            } else {
+                if (commentParent.getUserId() == hostHolder.getUsers().getId()) {
+                    commentNew.put("parentCommentIsUser", true);
+                } else {
+                    commentNew.put("parentCommentIsUser", false);
+                }
             }
 
             // 该评论点赞的数量
-            commentNew.put("likeCount", likeService.getLikeCount(EntityType.ENTITY_COMMENT, comment.getId()));
-            commentNew.put("dislikeCount", likeService.getDisLikeCount(EntityType.ENTITY_COMMENT, comment.getId()));
+            commentNew.put("likeCount", likeService.getLikeCount(EntityType.ENTITY_COMMENT, commentParent.getId()));
+            commentNew.put("dislikeCount", likeService.getDisLikeCount(EntityType.ENTITY_COMMENT, commentParent.getId()));
 
             // 该条评论是由哪个用户评论的
-            commentNew.put("user",userService.getUser(comment.getUserId()));
+            commentNew.put("user",userService.getUser(commentParent.getUserId()));
             singleComments.add(commentNew);
         }
         questionJson.put("comments", singleComments);
