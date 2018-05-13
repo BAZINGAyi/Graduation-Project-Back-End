@@ -4,7 +4,7 @@
 <mapper namespace="com.potflesh.wenda.dao.QuestionDAO">
     <sql id="table">question</sql>
 
-    <sql id="selectFields">id, title, content, comment_count, created_date, user_id, topic_id
+    <sql id="selectFields">id, title, content, comment_count, created_date, user_id, topic_id, markdown_content
     </sql>
 
     <select id="selectLatestQuestions" resultType="com.potflesh.wenda.model.Question">
@@ -14,7 +14,7 @@
         <include refid="table"/>
 
         <if test="userId != 0">
-            WHERE user_id = #{userId}
+            WHERE user_id = #{userId} AND status = 1
         </if>
 
         ORDER BY id DESC

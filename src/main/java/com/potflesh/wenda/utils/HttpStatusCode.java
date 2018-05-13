@@ -7,4 +7,6 @@ public class HttpStatusCode {
     public static int NO_CONTENT = 201;
     // token 已过期
     public static int Unauthorized = 401;
+    // 服务器出现错误
+    public static int SERVIC_ERROR = 999;
 }

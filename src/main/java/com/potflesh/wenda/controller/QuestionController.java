@@ -156,11 +156,24 @@ public class QuestionController {
             Map<String, Object> commentMap = new HashedMap();
             List<Comment> commentSonList = commentService.getCommentsByEntity(commentParent.getId(), EntityType.ENTITY_COMMENT);
             List<Map<String, Object>> commentSonListMap = new ArrayList<>();
-            for (int i = 0; i < commentSonList.size(); i++) {
+            for (Comment commentSon: commentSonList) {
                 Map<String, Object> commentSonMap = new HashedMap();
-                commentSonMap.put("comment", commentSonList.get(i));
+                commentSonMap.put("comment", commentSon);
+
                 // 为每个评论添加相应的用户信息
-                commentSonMap.put("user", userService.getUser(commentSonList.get(i).getUserId()));
+                commentSonMap.put("user", userService.getUser(commentSon.getUserId()));
+
+                // 标识这条评论是否是由登录用户评论的
+                if (hostHolder.getUsers() == null) {
+                    commentSonMap.put("sonCommentIsUser", false);
+                } else {
+                    if (commentSon.getUserId() == hostHolder.getUsers().getId()) {
+                        commentSonMap.put("sonCommentIsUser", true);
+                    } else {
+                        commentSonMap.put("sonCommentIsUser", false);
+                    }
+                }
+
                 commentSonListMap.add(commentSonMap);
             }
             commentMap.put("commentSon", commentSonListMap);
@@ -253,9 +266,18 @@ public class QuestionController {
 
                 vos.add(vo);
             }
-            return WendaUtil.getJSONString(200, vos);
+
+            Map<String, Object> questionMap = new HashedMap();
+            questionMap.put("questionList", vos);
+            questionMap.put("msg", "请求成功");
+
+            if (questionList.size() == 0) {
+                return WendaUtil.getJSONString(HttpStatusCode.NO_CONTENT, questionMap);
+            }
+
+            return WendaUtil.getJSONString(HttpStatusCode.SUCCESS_STATUS, questionMap);
         }
-        return WendaUtil.getJsonString(999,"您未登录");
+        return WendaUtil.getJsonString(HttpStatusCode.Unauthorized,"您未登录");
     }
 
     /**
@@ -264,7 +286,6 @@ public class QuestionController {
     @RequestMapping(value = "api/question/add",method={RequestMethod.POST})
     @ResponseBody
     public String createQuestion(@RequestBody Map<String, Object> reqMap){
-
         try{
 
             String title = reqMap.get("title").toString();
@@ -278,6 +299,7 @@ public class QuestionController {
             question.setCreatedDate(new Date());
             question.setMarkdownContent(markdownContent);
             question.setTopicId(Integer.valueOf(topicId));
+            System.out.println("markdown:" + markdownContent);
 
             Map<String,Object> map = new HashMap<>();
             if(hostHolder.getUsers() != null)
@@ -286,7 +308,7 @@ public class QuestionController {
                 map.put("msg","请登录后再发表问题");
                 map.put("status","fail");
                 //999 返回到登录页面
-                return WendaUtil.getJSONString(999,map);
+                return WendaUtil.getJSONString(HttpStatusCode.Unauthorized, map);
                 // question.setUserId(WendaUtil.Anonymous_USERID);
             }
 
@@ -294,13 +316,86 @@ public class QuestionController {
                 // 成功返回 0
                 map.put("msg","提问成功");
                 map.put("status","success");
-                return WendaUtil.getJSONString(200, map);
+                return WendaUtil.getJSONString(HttpStatusCode.SUCCESS_STATUS, map);
             }
 
         }catch (Exception e){
             logger.error("增加题目失败" + e.getMessage());
         }
         // 失败返回 1
-        return WendaUtil.getJsonString(200, "添加失败");
+        return WendaUtil.getJsonString(HttpStatusCode.SERVIC_ERROR, "添加失败");
+    }
+
+    @RequestMapping(value = "api/question/delete",method={RequestMethod.POST})
+    @ResponseBody
+    String deleteQuestion(@RequestBody Map<String, Object> reqMap) {
+        try{
+            int qid = Integer.valueOf(reqMap.get("qid").toString());
+            Map<String,Object> map = new HashMap<>();
+            if(hostHolder.getUsers() == null) {
+                map.put("msg","请登录后再删除问题");
+                map.put("status","fail");
+                //999 返回到登录页面
+                return WendaUtil.getJSONString(HttpStatusCode.Unauthorized, map);
+                // question.setUserId(WendaUtil.Anonymous_USERID);
+            }
+
+            if(questionService.deleteQuestion(qid) > 0){
+                // 成功返回 0
+                map.put("msg","删除成功");
+                map.put("status","success");
+                return WendaUtil.getJSONString(HttpStatusCode.SUCCESS_STATUS, map);
+            }
+
+        }catch (Exception e){
+            logger.error("修复问题失败" + e.getMessage());
+        }
+        // 失败返回 1
+        return WendaUtil.getJsonString(HttpStatusCode.SERVIC_ERROR, "删除问题失败");
+    }
+
+
+    /**
+     * 更新问题
+     * @return
+     */
+    @RequestMapping(value = "api/question/update",method={RequestMethod.PUT})
+    @ResponseBody
+    String updateQuestion(@RequestBody Map<String, Object> reqMap){
+        try{
+
+            String title = reqMap.get("title").toString();
+            String content = reqMap.get("content").toString();
+            String markdownContent = reqMap.get("markdownContent").toString();
+            int topicId =  Integer.valueOf(reqMap.get("topicId").toString());
+            int qid = Integer.valueOf(reqMap.get("qid").toString());
+
+            Question question = questionService.selectById(qid);
+            question.setTitle(title);
+            question.setContent(content);
+            question.setMarkdownContent(markdownContent);
+            question.setTopicId(topicId);
+
+            Map<String,Object> map = new HashMap<>();
+            if(hostHolder.getUsers() == null) {
+                map.put("msg","请登录后再发表问题");
+                map.put("status","fail");
+                //999 返回到登录页面
+                return WendaUtil.getJSONString(HttpStatusCode.Unauthorized, map);
+                // question.setUserId(WendaUtil.Anonymous_USERID);
+            }
+
+            if(questionService.updateQuestion(question) > 0){
+                // 成功返回 0
+                map.put("msg","更新成功");
+                map.put("status","success");
+                return WendaUtil.getJSONString(HttpStatusCode.SUCCESS_STATUS, map);
+            }
+
+        }catch (Exception e){
+            logger.error("修复问题失败" + e.getMessage());
+        }
+        // 失败返回 1
+        return WendaUtil.getJsonString(HttpStatusCode.SERVIC_ERROR, "修改问题失败");
     }
 }

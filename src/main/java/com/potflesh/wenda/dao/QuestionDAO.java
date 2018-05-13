@@ -46,4 +46,10 @@ public interface QuestionDAO {
                                             @Param("limit")int limit);
 
     List<Question> getQuestionsByUserId(@Param("userId") int id, @Param("offset") int offset, @Param("limit") int limit);
+
+    @Update({"update ", TABLE_NAME, " set title = #{title}, content = #{content}, markdown_content = #{markdownContent}, topic_id = #{topicId} where id=#{id}"})
+    int UpdateQuestion(Question question);
+
+    @Update({"update ", TABLE_NAME, " set status = 0 where id=#{id}"})
+    int deleteQuestion(@Param("id") int id);
 }

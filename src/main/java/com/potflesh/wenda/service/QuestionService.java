@@ -35,6 +35,20 @@ public class QuestionService {
         return questionDAO.addQuestion(question) > 0 ? question.getId():0;
     }
 
+    public int deleteQuestion(int id) {
+        return questionDAO.deleteQuestion(id);
+    }
+
+    public int updateQuestion(Question question) {
+        //敏感词过滤
+        question.setContent(HtmlUtils.htmlEscape(question.getContent()));
+        question.setTitle(HtmlUtils.htmlEscape(question.getTitle()));
+        question.setContent(sensitiveService.filter(question.getContent()));
+        question.setTitle(sensitiveService.filter(question.getTitle()));
+        question.setMarkdownContent(sensitiveService.filter(question.getMarkdownContent()));
+        return questionDAO.UpdateQuestion(question);
+    }
+
     public Question selectById(int qid){
         return questionDAO.selectById(qid);
     }
