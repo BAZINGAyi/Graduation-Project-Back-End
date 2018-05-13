@@ -2,6 +2,7 @@ package com.potflesh.wenda.service;
 
 import com.potflesh.wenda.dao.CommentDAO;
 import com.potflesh.wenda.model.Comment;
+import com.potflesh.wenda.model.EntityType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
@@ -33,12 +34,19 @@ public class CommentService {
         return commentDAO.addComment(comment);
     }
 
+    public int updateComment(Comment comment) {
+        comment.setContent(HtmlUtils.htmlEscape(comment.getContent()));
+        comment.setContent(sensitiveService.filter(comment.getContent()));
+        comment.setMarkdownContent(sensitiveService.filter(comment.getMarkdownContent()));
+        return commentDAO.updateComment(comment);
+    }
+
     public int getUserCommentCount(int userId) {
         return commentDAO.getUserCommentCount(userId);
     }
 
     public int getCommentInCommentCount(int entityId) {
-        return commentDAO.getCommentInCommentCount(entityId);
+        return commentDAO.getCommentInCommentCount(entityId, EntityType.ENTITY_COMMENT);
     }
 
     public Comment getCommentById(int id) {
@@ -50,7 +58,11 @@ public class CommentService {
     }
 
     public void deleteComment(int entityId,int entityType){
-        commentDAO.updateStatus(entityId,entityType,1);
+        commentDAO.updateStatus(entityId,entityType,0);
+    }
+
+    public int deleteComment(int commentId){
+        return commentDAO.deleteComment(commentId);
     }
 
     public List<Comment> getCommentsByUserid(int userId) {

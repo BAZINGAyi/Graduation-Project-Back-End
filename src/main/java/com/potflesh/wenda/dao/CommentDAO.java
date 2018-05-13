@@ -22,6 +22,12 @@ public interface CommentDAO {
 
     int addComment(Comment comment);
 
+    @Update({"update ", TABLE_NAME, " set markdown_content = #{markdownContent}, content = #{content} where id=#{id}"})
+    int updateComment(Comment comment);
+
+    @Update({"update ", TABLE_NAME, " set status = 0 where id=#{commentId}"})
+    int deleteComment(int commentId);
+
 
     @Select({"select ",SELECT_FIELDS," from ",TABLE_NAME," where entity_id = #{entityId} and entity_type " +
             " = #{entityType} and status = 1 order by created_date desc "})
@@ -37,15 +43,15 @@ public interface CommentDAO {
     void updateStatus(@Param("entityId") int entityId, @Param("entityType") int entityType, @Param("status") int status);
 
 
-    @Select({"select count(id) from ", TABLE_NAME, " where entity_id=#{entityId} and entity_type=#{entityType} "})
+    @Select({"select count(id) from ", TABLE_NAME, " where entity_id=#{entityId} and entity_type=#{entityType} and status = 1 "})
     int getCommentCount(@Param("entityId") int entityId, @Param("entityType") int entityType);
 
 
-    @Select({"select count(id) from ", TABLE_NAME, " where user_id=#{userId}"})
+    @Select({"select count(id) from ", TABLE_NAME, " where user_id=#{userId} and status = 1"})
     int getUserCommentCount(int userId);
 
-    @Select({"select count(id) from", TABLE_NAME, " where entity_id =#{entityId} and entity_type=2"})
-    int getCommentInCommentCount(int entityId);
+    @Select({"select count(id) from", TABLE_NAME, " where entity_id =#{entityId} and entity_type=#{entityType} and status = 1 "})
+    int getCommentInCommentCount(@Param("entityId")int entityId, @Param("entityType") int entityType);
 
     @Select({"select ", SELECT_FIELDS, " from ", TABLE_NAME, " where user_id=#{userId}"})
     List<Comment> getCommentsByUserId(int userId);

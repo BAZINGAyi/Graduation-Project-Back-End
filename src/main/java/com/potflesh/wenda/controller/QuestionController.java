@@ -248,27 +248,37 @@ public class QuestionController {
     /**
      * 得到当前登陆用户发布的问题列表
      */
-    @RequestMapping(path = {"/api/LoginUserQuestionList"},method ={RequestMethod.GET})
+    @RequestMapping(path = {"/api/getUserProfile"},method ={RequestMethod.GET})
     @ResponseBody
-    String getLoginUserQuestionList(@RequestParam("offset") int offset){
-        int localUserId = hostHolder.getUsers() == null ? 0 : hostHolder.getUsers().getId();
+    String getLoginUserQuestionList(@RequestParam("offset") int offset,
+                                    @RequestParam("userId") int userId){
+        User user = userService.getUser(userId);
+        int localUserId = userId;
         List< Map<String,Object> > vos = new ArrayList< Map<String,Object>>();
         // 用户已经登录
-        if (localUserId != 0) {
+        if (user != null) {
             List<Question> questionList = new ArrayList<>();
             questionList = questionService.getLatestQuestions(localUserId, offset, 10);
             for (Question question : questionList){
                 Map vo = new HashedMap();
-
                 vo.put("question", question);
                 vo.put("followCount", followService.getFollowerCount(EntityType.ENTITY_QUESTION, question.getId()));
                 vo.put("user", userService.getUser(question.getUserId()));
-
                 vos.add(vo);
             }
 
             Map<String, Object> questionMap = new HashedMap();
             questionMap.put("questionList", vos);
+            // 用户回答问题的数量
+            questionMap.put("commentCount", commentService.getUserCommentCount(localUserId));
+            // 用户的粉丝
+            questionMap.put("followerUserCount", followService.getFollowerCount(EntityType.ENTITY_USER, localUserId));
+            // 用户关注的人
+            questionMap.put("followeeUserCount", followService.getFolloweeCount(localUserId, EntityType.ENTITY_USER));
+            // 用户关注问题的数量
+            questionMap.put("followeeQuestionCount", followService.getFolloweeCount(localUserId, EntityType.ENTITY_QUESTION));
+            // 用户的个人信息
+            questionMap.put("user", user);
             questionMap.put("msg", "请求成功");
 
             if (questionList.size() == 0) {
