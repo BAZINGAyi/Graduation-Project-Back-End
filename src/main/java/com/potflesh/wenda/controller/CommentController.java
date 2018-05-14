@@ -6,7 +6,6 @@ import com.potflesh.wenda.async.EventType;
 import com.potflesh.wenda.model.*;
 import com.potflesh.wenda.service.*;
 import com.potflesh.wenda.utils.HttpStatusCode;
-import com.potflesh.wenda.utils.RedisKeyUtil;
 import org.apache.commons.collections.map.HashedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -333,6 +332,13 @@ public class CommentController {
     @ResponseBody
     String getUserCommentQuestion(@RequestParam("offset") int offset){
         int localUserId = hostHolder.getUsers() == null ? 0 : hostHolder.getUsers().getId();
+        Map<String,Object> map = new HashMap<>();
+
+        if (localUserId == 0) {
+            map.put("msg", "请登录后再评论");
+            return WendaUtil.getJSONString(HttpStatusCode.Unauthorized, map);
+        }
+
         // 首先取出用户该用户的所有评论
         List<Comment> comments = new ArrayList<>();
         if (localUserId != 0) {
@@ -348,7 +354,7 @@ public class CommentController {
         // 取出这些问题
         List<Map<String,Object>> vos = new ArrayList< Map<String,Object>>();
         if (questionIdList.size() != 0) {
-            List<Question> questionList = questionService.getQuestionsByUserIdList(questionIdList, offset);
+            List<Question> questionList = questionService.getQuestionsByQuestionIdList(questionIdList, offset);
             for (Question question : questionList){
                 Map vo = new HashedMap();
                 vo.put("question", question);
@@ -356,7 +362,12 @@ public class CommentController {
                 vo.put("user", userService.getUser(question.getUserId()));
                 vos.add(vo);
             }
+            map.put("questionList", vos);
+            map.put("msg", "请求成功");
+            return WendaUtil.getJSONString(HttpStatusCode.SUCCESS_STATUS, map);
+        } else {
+            map.put("msg", "内容为空");
+            return WendaUtil.getJSONString(HttpStatusCode.NO_CONTENT, map);
         }
-        return WendaUtil.getJSONString(200, vos);
     }
 }

@@ -65,7 +65,11 @@ public class QuestionService {
         return questionDAO.selectLastQuestionQuestionListByTitle(searchContent, offset, 10);
     }
 
-    public List<Question> getQuestionsByUserIdList(Set<Integer> questionIdList, int offset) {
-        return questionDAO.getQuestionsByUserIdList(questionIdList, offset, 10);
+    public List<Question> getQuestionsByQuestionIdList(Set<Integer> questionIdList, int offset) {
+        return questionDAO.getQuestionsByQuestionIdList(questionIdList, offset, 10);
+    }
+
+    public List<Question> getQuestionsByQuestionIdList(List<Integer> questionIdList, int offset) {
+        return questionDAO.getQuestionsByQuestionIdList(questionIdList, offset, 10);
     }
 }

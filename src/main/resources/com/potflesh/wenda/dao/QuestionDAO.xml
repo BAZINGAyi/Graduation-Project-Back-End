@@ -47,7 +47,7 @@
         LIMIT #{offset},#{limit}
     </select>
 
-    <select id="getQuestionsByUserIdList" resultType="com.potflesh.wenda.model.Question">
+    <select id="getQuestionsByQuestionIdList" resultType="com.potflesh.wenda.model.Question">
         SELECT
         <include refid="selectFields"/>
         FROM

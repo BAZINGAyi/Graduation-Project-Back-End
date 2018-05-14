@@ -408,4 +408,44 @@ public class QuestionController {
         // 失败返回 1
         return WendaUtil.getJsonString(HttpStatusCode.SERVIC_ERROR, "修改问题失败");
     }
+
+    /**
+     * 得到当前登陆用户关注的问题列表
+     */
+    @RequestMapping(path = {"/api/queryUserFolloweeQuestionList"},method ={RequestMethod.GET})
+    @ResponseBody
+    String getUserCommentQuestion(@RequestParam("offset") int offset){
+        int localUserId = hostHolder.getUsers() == null ? 0 : hostHolder.getUsers().getId();
+        Map<String,Object> map = new HashMap<>();
+
+        if (localUserId == 0) {
+            map.put("msg", "请登录后再评论");
+            return WendaUtil.getJSONString(HttpStatusCode.Unauthorized, map);
+        }
+
+        // 首先取出该用户关注所有问题的Id
+        List<Integer> questionIdList = new ArrayList<>();
+        if (localUserId != 0) {
+            questionIdList = followService.getFollowees(localUserId, EntityType.ENTITY_QUESTION, offset, 10);
+        }
+
+        // 取出这些问题
+        List<Map<String,Object>> vos = new ArrayList< Map<String,Object>>();
+        if (questionIdList.size() != 0) {
+            List<Question> questionList = questionService.getQuestionsByQuestionIdList(questionIdList, offset);
+            for (Question question : questionList){
+                Map vo = new HashedMap();
+                vo.put("question", question);
+                vo.put("followCount", followService.getFollowerCount(EntityType.ENTITY_QUESTION, question.getId()));
+                vo.put("user", userService.getUser(question.getUserId()));
+                vos.add(vo);
+            }
+            map.put("questionList", vos);
+            map.put("msg", "请求成功");
+            return WendaUtil.getJSONString(HttpStatusCode.SUCCESS_STATUS, map);
+        } else {
+            map.put("msg", "内容为空");
+            return WendaUtil.getJSONString(HttpStatusCode.NO_CONTENT, map);
+        }
+    }
 }
