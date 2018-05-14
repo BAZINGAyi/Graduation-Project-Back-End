@@ -37,4 +37,8 @@ public class MessageService {
     public int updateConversationReadCount(String conversationId){
         return messageDAO.setConversationReadCount(conversationId);
     }
+
+    public List<Message> getMessagesByUserId(int userId, int offset, int limit) {
+        return messageDAO.getMessageByUserId(userId, offset, limit);
+    }
 }

@@ -3,21 +3,18 @@ package com.potflesh.wenda.controller;
 import com.potflesh.wenda.model.*;
 import com.potflesh.wenda.service.MessageService;
 import com.potflesh.wenda.service.UserService;
+import com.potflesh.wenda.utils.HttpStatusCode;
 import org.apache.ibatis.annotations.Param;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import com.potflesh.wenda.utils.WendaUtil;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import javax.servlet.http.HttpSession;
+import java.util.*;
 
 /**
  * Created by bazinga on 2017/4/15.
@@ -124,4 +121,34 @@ public class MessageController {
 
         return "letterDetail";
     }
+
+    /////////////////////////////////////////////////////////////////////////////////// api interface ////////////////////////////////////////////////////////
+    @RequestMapping(path = {"api/msg/list"}, method = {RequestMethod.GET})
+    @ResponseBody
+    public String getConversationList(@RequestBody Map<String, Object> reqMap) {
+        try {
+            Map<String, Object> messageList = new HashMap<>();
+            if (hostHolder.getUsers() == null) {
+                messageList.put("msg", "请登录");
+                return WendaUtil.getJSONString(HttpStatusCode.Unauthorized, messageList);
+            }
+
+            int localUserId = hostHolder.getUsers().getId();
+
+            // 取出和用户所有有关的 message
+            List<Message> userMessages = messageService.getMessagesByUserId(localUserId, 0 ,100);
+
+            // 将 message 遍历按照组分类，形成新的 conversation
+            List<Message> conversationList = messageService.getConversationList(localUserId, 0, 100);
+
+            // 将形成的 conversation 放入返回的 message 里
+
+
+        } catch (Exception e) {
+            logger.error("获取站内信列表失败" + e.getMessage());
+        }
+
+        return "";
+    }
+
 }
