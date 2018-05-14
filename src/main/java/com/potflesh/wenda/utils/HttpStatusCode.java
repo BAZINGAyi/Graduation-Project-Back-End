@@ -9,4 +9,6 @@ public class HttpStatusCode {
     public static int Unauthorized = 401;
     // 服务器出现错误
     public static int SERVIC_ERROR = 999;
+    // 传入参数错误
+    public static int REQUEST_PARAMARY_ERROR = 401;
 }

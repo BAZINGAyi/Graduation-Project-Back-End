@@ -8,12 +8,14 @@ import com.potflesh.wenda.service.CommentService;
 import com.potflesh.wenda.service.FollowService;
 import com.potflesh.wenda.service.QuestionService;
 import com.potflesh.wenda.service.UserService;
+import com.potflesh.wenda.utils.HttpStatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import com.potflesh.wenda.utils.WendaUtil;
 
+import java.net.HttpCookie;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -229,11 +231,30 @@ public class FollowController {
         return WendaUtil.getJSONString(ret ? 200 : 1, info);
     }
 
-    /**
-     * 得到登录用户关注的问题
-     * @return
-     */
-    String getUserFollowQuestion() {
-        return "";
+    @RequestMapping(path = {"api/followUser"}, method = {RequestMethod.POST})
+    @ResponseBody
+    public String followUserAPI(@RequestBody Map<String, Object> reqMap) {
+
+        if (hostHolder.getUsers() == null) {
+            return WendaUtil.getJsonString(HttpStatusCode.Unauthorized, "请登录");
+        }
+
+        int userId = Integer.valueOf(reqMap.get("userId").toString());
+        User u = userService.getUser(userId);
+        if (u == null) {
+            return WendaUtil.getJsonString(HttpStatusCode.REQUEST_PARAMARY_ERROR, "用户不存在");
+        }
+
+        boolean ret = followService.follow(hostHolder.getUsers().getId(), userId, EntityType.ENTITY_USER);
+
+        eventProducer.fireEvent(new EventModel(EventType.FOLLOW)
+                .setActorId(hostHolder.getUsers().getId()).setEntityId(userId)
+                .setEntityType(EntityType.ENTITY_USER).setEntityOwnerId(u.getId()));
+
+        // 返回跟随后的信息，用于更新页面
+        Map<String, Object> info = new HashMap<>();
+        info.put("followeeUserCount", followService.getFolloweeCount(EntityType.ENTITY_USER, userId));
+        return WendaUtil.getJSONString(ret ? HttpStatusCode.SUCCESS_STATUS : HttpStatusCode.SERVIC_ERROR, info);
     }
+
 }
