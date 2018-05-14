@@ -182,13 +182,13 @@ public class FollowController {
     public String followQuestionAPI(@RequestBody Map<String, Object> reqMap) {
 
         if (hostHolder.getUsers() == null) {
-            return WendaUtil.getJsonString(999, "请登录");
+            return WendaUtil.getJsonString(HttpStatusCode.Unauthorized, "请登录");
         }
 
         int questionId = Integer.valueOf(reqMap.get("questionId").toString());
         Question q = questionService.selectById(questionId);
         if (q == null) {
-            return WendaUtil.getJsonString(1, "问题不存在");
+            return WendaUtil.getJsonString(HttpStatusCode.REQUEST_PARAMARY_ERROR, "问题不存在");
         }
 
         boolean ret = followService.follow(hostHolder.getUsers().getId(), questionId, EntityType.ENTITY_QUESTION);
@@ -199,24 +199,30 @@ public class FollowController {
 
         // 返回跟随后的信息，用于更新页面
         Map<String, Object> info = new HashMap<>();
-        info.put("headUrl", hostHolder.getUsers().getHeadUrl());
-        info.put("name", hostHolder.getUsers().getName());
-        info.put("id", hostHolder.getUsers().getId());
-        info.put("count", followService.getFollowerCount(EntityType.ENTITY_QUESTION, questionId));
-        return WendaUtil.getJSONString(ret ? 200 : 1, info);
+        if (ret == true) {
+            info.put("headUrl", hostHolder.getUsers().getHeadUrl());
+            info.put("name", hostHolder.getUsers().getName());
+            info.put("id", hostHolder.getUsers().getId());
+            info.put("count", followService.getFollowerCount(EntityType.ENTITY_QUESTION, questionId));
+            info.put("msg", "关注成功");
+            return WendaUtil.getJSONString(HttpStatusCode.SUCCESS_STATUS, info);
+        } else {
+            info.put("msg", "关注失败");
+            return WendaUtil.getJSONString(HttpStatusCode.SERVIC_ERROR, info);
+        }
     }
 
     @RequestMapping(path = {"api/unfollowQuestion"}, method = {RequestMethod.POST})
     @ResponseBody
     public String unfollowQuestioAPI(@RequestBody Map<String, Object> reqMap) {
         if (hostHolder.getUsers() == null) {
-            return WendaUtil.getJsonString(999);
+            return WendaUtil.getJsonString(HttpStatusCode.Unauthorized);
         }
 
         int questionId = Integer.valueOf(reqMap.get("questionId").toString());
         Question q = questionService.selectById(questionId);
         if (q == null) {
-            return WendaUtil.getJsonString(1, "问题不存在");
+            return WendaUtil.getJsonString(HttpStatusCode.REQUEST_PARAMARY_ERROR, "问题不存在");
         }
 
         boolean ret = followService.unfollow(hostHolder.getUsers().getId(), EntityType.ENTITY_QUESTION, questionId);
@@ -225,10 +231,16 @@ public class FollowController {
                 .setActorId(hostHolder.getUsers().getId()).setEntityId(questionId)
                 .setEntityType(EntityType.ENTITY_QUESTION).setEntityOwnerId(q.getUserId()));
 
+        // 返回跟随后的信息，用于更新页面
         Map<String, Object> info = new HashMap<>();
-        info.put("id", hostHolder.getUsers().getId());
-        info.put("count", followService.getFollowerCount(EntityType.ENTITY_QUESTION, questionId));
-        return WendaUtil.getJSONString(ret ? 200 : 1, info);
+        if (ret == true) {
+            info.put("count", followService.getFollowerCount(EntityType.ENTITY_QUESTION, questionId));
+            info.put("msg", "取消关注成功");
+            return WendaUtil.getJSONString(HttpStatusCode.SUCCESS_STATUS, info);
+        } else {
+            info.put("msg", "取消关注失败");
+            return WendaUtil.getJSONString(HttpStatusCode.SERVIC_ERROR, info);
+        }
     }
 
     @RequestMapping(path = {"api/followUser"}, method = {RequestMethod.POST})
@@ -256,7 +268,7 @@ public class FollowController {
         // 返回跟随后的信息，用于更新页面
         Map<String, Object> info = new HashMap<>();
         if (ret == true) {
-            info.put("followeeUserCount", followService.getFolloweeCount(EntityType.ENTITY_USER, userId));
+            info.put("followerUserCount", followService.getFollowerCount(EntityType.ENTITY_USER, userId));
             info.put("msg", "关注成功");
             return WendaUtil.getJSONString(HttpStatusCode.SUCCESS_STATUS, info);
         } else {
@@ -279,12 +291,12 @@ public class FollowController {
             return WendaUtil.getJsonString(HttpStatusCode.REQUEST_PARAMARY_ERROR, "用户不存在");
         }
 
-        boolean ret = followService.unfollow(hostHolder.getUsers().getId(), userId, EntityType.ENTITY_USER);
+        boolean ret = followService.unfollow(hostHolder.getUsers().getId(), EntityType.ENTITY_USER, userId);
 
         // 返回跟随后的信息，用于更新页面
         Map<String, Object> info = new HashMap<>();
         if (ret == true) {
-            info.put("followeeUserCount", followService.getFolloweeCount(EntityType.ENTITY_USER, userId));
+            info.put("followerUserCount", followService.getFollowerCount(EntityType.ENTITY_USER, userId));
             info.put("msg", "取消关注成功");
             return WendaUtil.getJSONString(HttpStatusCode.SUCCESS_STATUS, info);
         } else {

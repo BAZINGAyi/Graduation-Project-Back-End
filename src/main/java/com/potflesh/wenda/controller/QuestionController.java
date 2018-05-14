@@ -256,7 +256,7 @@ public class QuestionController {
         int localUserId = userId;
         List< Map<String,Object> > vos = new ArrayList< Map<String,Object>>();
         // 用户已经登录
-        if (user != null) {
+        if (user != null && hostHolder.getUsers() != null) {
             List<Question> questionList = new ArrayList<>();
             questionList = questionService.getLatestQuestions(localUserId, offset, 10);
             for (Question question : questionList){
@@ -277,6 +277,8 @@ public class QuestionController {
             questionMap.put("followeeUserCount", followService.getFolloweeCount(localUserId, EntityType.ENTITY_USER));
             // 用户关注问题的数量
             questionMap.put("followeeQuestionCount", followService.getFolloweeCount(localUserId, EntityType.ENTITY_QUESTION));
+            // 标识返回的档案页。用户是否已经关注
+            questionMap.put("isFollow", followService.isFollower(hostHolder.getUsers().getId(), EntityType.ENTITY_USER, userId));
             // 用户的个人信息
             questionMap.put("user", user);
             questionMap.put("msg", "请求成功");
