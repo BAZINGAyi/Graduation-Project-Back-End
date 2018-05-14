@@ -2,7 +2,6 @@ package com.potflesh.wenda.service;
 import com.potflesh.wenda.dao.LoginTicketDAO;
 import com.potflesh.wenda.dao.UserDAO;
 import com.potflesh.wenda.model.LoginTicket;
-import com.potflesh.wenda.model.Question;
 import com.potflesh.wenda.model.User;
 import com.potflesh.wenda.utils.WendaUtil;
 import org.apache.commons.collections.map.HashedMap;
@@ -119,5 +118,9 @@ public class UserService {
 
     public List<User> getLastSearchUserList(String searchContent, int offset) {
         return userDAO.selectUserListByName(searchContent, offset, 10);
+    }
+
+    public List<User> getUserListsByUserIdList(List<Integer> userIdList, int offset) {
+        return this.userDAO.getUserListsByUserIdList(userIdList, offset, 10);
     }
 }

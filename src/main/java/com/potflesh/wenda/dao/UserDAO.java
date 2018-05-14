@@ -40,4 +40,8 @@ public interface UserDAO {
     List<User> selectUserListByName(@Param("name") String name,
                                     @Param("offset") int offset,
                                     @Param("limit") int limit);
+
+    List<User> getUserListsByUserIdList(@Param("userIdList")List<Integer> userIdList,
+                                        @Param("offset")int offset,
+                                        @Param("limit")int limit);
 }

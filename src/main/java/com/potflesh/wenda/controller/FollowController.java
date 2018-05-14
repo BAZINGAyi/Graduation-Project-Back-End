@@ -305,4 +305,53 @@ public class FollowController {
         }
     }
 
+    @RequestMapping(path = {"api/getUserFollowers"}, method = {RequestMethod.POST})
+    @ResponseBody
+    public String getUserFollowersAPI(@RequestBody Map<String, Object> reqMap) {
+
+        if (hostHolder.getUsers() == null) {
+            return WendaUtil.getJsonString(HttpStatusCode.Unauthorized, "请登录");
+        }
+
+        int userId = Integer.valueOf(reqMap.get("userId").toString());
+        int offset = Integer.valueOf(reqMap.get("offset").toString());
+        User u = userService.getUser(userId);
+        if (u == null) {
+            return WendaUtil.getJsonString(HttpStatusCode.REQUEST_PARAMARY_ERROR, "用户不存在");
+        }
+
+        List<Integer> userIdList = followService.getFollowers(EntityType.ENTITY_USER, userId, offset , 10);
+        System.out.println("sssss"+userIdList.get(0));
+        Map<String, Object> folloerMap= new HashMap<>();
+        List<Map<String, Object>> infoListMap = new ArrayList<>();
+
+        if (userIdList != null && userIdList.size() != 0) {
+            List<User> userList = this.userService.getUserListsByUserIdList(userIdList, offset);
+            if (userIdList != null && userIdList.size() !=0) {
+                for (User user : userList) {
+                    Map<String, Object> info = new HashMap<>();
+                    info.put("user", user);
+                    System.out.println("userId"+user.getId());
+                    info.put("commentCount", commentService.getUserCommentCount(user.getId()));
+                    info.put("followerCount", followService.getFollowerCount(EntityType.ENTITY_USER, user.getId()));
+                    info.put("followeeCount", followService.getFolloweeCount(user.getId(), EntityType.ENTITY_USER));
+                    info.put("followeeQuestionCount", followService.getFolloweeCount(userId, EntityType.ENTITY_QUESTION));
+                    info.put("followed", followService.isFollower(hostHolder.getUsers().getId(), EntityType.ENTITY_USER, user.getId()));
+                    infoListMap.add(info);
+                }
+                folloerMap.put("msg", "请求成功");
+                folloerMap.put("userList", infoListMap);
+                return WendaUtil.getJSONString(HttpStatusCode.SUCCESS_STATUS, folloerMap);
+            }
+        } else {
+            folloerMap.put("msg", "用户没有粉丝");
+            folloerMap.put("userList", infoListMap);
+            return WendaUtil.getJSONString(HttpStatusCode.NO_CONTENT, folloerMap);
+        }
+
+        folloerMap.put("msg", "服务器错误");
+        folloerMap.put("userList", infoListMap);
+        return WendaUtil.getJSONString(HttpStatusCode.SERVIC_ERROR, folloerMap);
+    }
+
 }
