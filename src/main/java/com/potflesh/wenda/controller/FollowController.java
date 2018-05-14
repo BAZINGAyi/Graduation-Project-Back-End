@@ -248,13 +248,49 @@ public class FollowController {
         boolean ret = followService.follow(hostHolder.getUsers().getId(), userId, EntityType.ENTITY_USER);
 
         eventProducer.fireEvent(new EventModel(EventType.FOLLOW)
-                .setActorId(hostHolder.getUsers().getId()).setEntityId(userId)
-                .setEntityType(EntityType.ENTITY_USER).setEntityOwnerId(u.getId()));
+                .setActorId(hostHolder.getUsers().getId())
+                .setEntityId(userId)
+                .setEntityType(EntityType.ENTITY_USER)
+                .setEntityOwnerId(u.getId()));
 
         // 返回跟随后的信息，用于更新页面
         Map<String, Object> info = new HashMap<>();
-        info.put("followeeUserCount", followService.getFolloweeCount(EntityType.ENTITY_USER, userId));
-        return WendaUtil.getJSONString(ret ? HttpStatusCode.SUCCESS_STATUS : HttpStatusCode.SERVIC_ERROR, info);
+        if (ret == true) {
+            info.put("followeeUserCount", followService.getFolloweeCount(EntityType.ENTITY_USER, userId));
+            info.put("msg", "关注成功");
+            return WendaUtil.getJSONString(HttpStatusCode.SUCCESS_STATUS, info);
+        } else {
+            info.put("msg", "关注失败");
+            return WendaUtil.getJSONString(HttpStatusCode.SERVIC_ERROR, info);
+        }
+    }
+
+    @RequestMapping(path = {"api/unfollowUser"}, method = {RequestMethod.POST})
+    @ResponseBody
+    public String unfollowUserAPI(@RequestBody Map<String, Object> reqMap) {
+
+        if (hostHolder.getUsers() == null) {
+            return WendaUtil.getJsonString(HttpStatusCode.Unauthorized, "请登录");
+        }
+
+        int userId = Integer.valueOf(reqMap.get("userId").toString());
+        User u = userService.getUser(userId);
+        if (u == null) {
+            return WendaUtil.getJsonString(HttpStatusCode.REQUEST_PARAMARY_ERROR, "用户不存在");
+        }
+
+        boolean ret = followService.unfollow(hostHolder.getUsers().getId(), userId, EntityType.ENTITY_USER);
+
+        // 返回跟随后的信息，用于更新页面
+        Map<String, Object> info = new HashMap<>();
+        if (ret == true) {
+            info.put("followeeUserCount", followService.getFolloweeCount(EntityType.ENTITY_USER, userId));
+            info.put("msg", "取消关注成功");
+            return WendaUtil.getJSONString(HttpStatusCode.SUCCESS_STATUS, info);
+        } else {
+            info.put("msg", "取消关注失败");
+            return WendaUtil.getJSONString(HttpStatusCode.SERVIC_ERROR, info);
+        }
     }
 
 }
