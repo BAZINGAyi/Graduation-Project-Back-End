@@ -97,6 +97,7 @@ public class FollowService {
      */
     public List<Integer> getFollowees(int userId, int entityType, int count) {
         String followeeKey = RedisKeyUtil.getFolloweeKey(userId, entityType);
+        System.out.println("key:" + followeeKey);
         return getIdsFromSet(redisService.zrevrange(followeeKey, 0, count));
     }
 

@@ -321,7 +321,6 @@ public class FollowController {
         }
 
         List<Integer> userIdList = followService.getFollowers(EntityType.ENTITY_USER, userId, offset , 10);
-        System.out.println("sssss"+userIdList.get(0));
         Map<String, Object> folloerMap= new HashMap<>();
         List<Map<String, Object>> infoListMap = new ArrayList<>();
 

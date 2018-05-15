@@ -6,6 +6,7 @@ import com.potflesh.wenda.model.HostHolder;
 import com.potflesh.wenda.service.FeedService;
 import com.potflesh.wenda.service.FollowService;
 import com.potflesh.wenda.service.RedisService;
+import com.potflesh.wenda.utils.HttpStatusCode;
 import com.potflesh.wenda.utils.WendaUtil;
 import org.apache.commons.collections.map.HashedMap;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,17 +68,22 @@ public class FeedController {
         int localUserId = hostHolder.getUsers() == null ? 0 : hostHolder.getUsers().getId();
         List<Integer> followees = new ArrayList<>();
         Map<String, Object> maps = new HashedMap();
-        // 未登录
-        if (localUserId == 0){
 
-        }else {
+        if (localUserId != 0) {
             // 查找我关注的人
             followees = followService.getFollowees(localUserId, EntityType.ENTITY_USER,
                     Integer.MAX_VALUE);
-            // 加上查找我关注的问题
+            // 这里查找的 feed 流的原理是 用户1关注对应的用户2后，被关注的用户2的动态都会被推送到用户1的feed流里，这里查出的 feed 流的 user_id 都是
+            // 用户2
+            // 查找我关注的问题 写法不对如果，想要增加关注问题的动态 可以把 feed 中的 user_id 改成 entity_id 再增加 entity_type 进行区分
+//            followees.addAll(followService.getFollowees(localUserId, EntityType.ENTITY_QUESTION,
+//                    Integer.MAX_VALUE));
+            // 这里同样支持给关注某个问题的用户发消息提醒
         }
+
         // 未登录则获取最近所有用户的 feed
         List<Feed> feeds = feedService.getUserFeeds(Integer.MAX_VALUE,followees,10);
+
         List<Map<String, Object>> feedsListMap = new ArrayList<>();
         // 将序列化的feed信息换成 json 格式
         for (int i = 0; i<feeds.size(); i++) {
@@ -98,9 +104,11 @@ public class FeedController {
         maps.put("feeds",feedsListMap);
 
         if (feeds != null && feeds.size() != 0) {
-            return WendaUtil.getJSONString(200, maps);
+            maps.put("msg", "请求成功");
+            return WendaUtil.getJSONString(HttpStatusCode.SUCCESS_STATUS, maps);
         } else {
-            return WendaUtil.getJSONString(400, maps);
+            maps.put("msg", "没有数据");
+            return WendaUtil.getJSONString(HttpStatusCode.NO_CONTENT, maps);
         }
     }
 
