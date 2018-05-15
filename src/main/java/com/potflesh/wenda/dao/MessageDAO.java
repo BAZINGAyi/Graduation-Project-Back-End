@@ -34,4 +34,8 @@ public interface MessageDAO {
     List<Message> getConversationList(@Param("userId") int userId,
                                       @Param("offset") int offset, @Param("limit") int limit);
     // 由于 message 是没有用的，所以把统计出的会话的总数赋值给 id 通过 id 反应出会话的总数。
+
+    @Select({"select ", SELECT_FIELDS, " from ", TABLE_NAME, " where from_id=#{userId} or to_id = #{userId} limit #{offset}, #{limit}"})
+    List<Message> getMessageByUserId(@Param("userId") int userId,
+                                     @Param("offset") int offset, @Param("limit") int limit);
 }
