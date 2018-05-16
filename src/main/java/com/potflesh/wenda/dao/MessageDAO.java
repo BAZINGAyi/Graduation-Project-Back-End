@@ -40,4 +40,9 @@ public interface MessageDAO {
     @Select({"select ", SELECT_FIELDS, " from ", TABLE_NAME, " where from_id=#{userId} or to_id = #{userId} limit #{offset}, #{limit}"})
     List<Message> getMessageByUserId(@Param("userId") int userId,
                                      @Param("offset") int offset, @Param("limit") int limit);
+
+    @Select({"select * from", TABLE_NAME, " where created_date not in (select max(created_date) from message where conversation_id = #{conversationId}) and conversation_id = #{conversationId} limit #{offset}, #{limit} "})
+    List<Message> getNotIncludeMaxDateMessageList(@Param("conversationId") String conversationId,
+                                                  @Param("offset") int offset,
+                                                  @Param("limit") int limit);
 }

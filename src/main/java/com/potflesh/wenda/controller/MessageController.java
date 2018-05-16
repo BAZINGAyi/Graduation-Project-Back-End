@@ -286,10 +286,11 @@ public class MessageController {
 
     @RequestMapping(path = {"api/msg/addMessage"}, method = {RequestMethod.POST})
     @ResponseBody
-    public String addMessageAPI(@RequestParam("toName") String toName,
-                             @RequestParam("content") String content) {
+    public String addMessageAPI(@RequestBody Map<String, Object> reqMap) {
 
         Map<String, Object> messageResultMap = new HashedMap();
+        String toName =  reqMap.get("toName").toString().trim();
+        String content =  reqMap.get("content").toString().trim();
 
         try {
             if (hostHolder.getUsers() == null) {
@@ -318,7 +319,43 @@ public class MessageController {
             logger.error("发送消息失败" + e.getMessage());
             return WendaUtil.getJsonString(1, "发送消息失败");
         }
+    }
 
+    @RequestMapping(path = {"api/msg/ConversationList"}, method = {RequestMethod.GET})
+    @ResponseBody
+    public String getConversationListByIdAPI(@Param("conversationId") String conversationId) {
+
+        Map<String, Object> messageList = new HashMap<>();
+        try {
+
+            if (hostHolder.getUsers() == null) {
+                messageList.put("msg", "请登录");
+                return WendaUtil.getJSONString(HttpStatusCode.Unauthorized, messageList);
+            }
+
+            int localUserId = hostHolder.getUsers().getId();
+
+            // 将 message 遍历按照组分类，形成新的 conversation
+            List<Message> conversationList = messageService.getNotIncludeMaxDateMessageList(conversationId, 0, 100);
+
+            if (conversationList == null || conversationList.size() == 0) {
+                messageList.put("msg", "返回的数字为空");
+                return WendaUtil.getJSONString(HttpStatusCode.NO_CONTENT, messageList);
+            }
+
+            // -1 表示不跳过第一个
+            int firstThreadId = -1;
+            messageList.put("messageList", generateFrontEndMessageLogicStructure(conversationList, localUserId, firstThreadId));
+            messageList.put("msg", "请求成功");
+
+            return WendaUtil.getJSONString(HttpStatusCode.SUCCESS_STATUS, messageList);
+
+        } catch (Exception e) {
+            logger.error("获取站内信列表失败" + e.getMessage());
+        }
+
+        messageList.put("msg", "服务器出错");
+        return WendaUtil.getJSONString(HttpStatusCode.SERVIC_ERROR, messageList);
     }
 
 }

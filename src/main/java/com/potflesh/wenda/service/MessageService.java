@@ -41,4 +41,8 @@ public class MessageService {
     public List<Message> getMessagesByUserId(int userId, int offset, int limit) {
         return messageDAO.getMessageByUserId(userId, offset, limit);
     }
+
+    public List<Message> getNotIncludeMaxDateMessageList(String conversationId, int offset, int limit) {
+        return messageDAO.getNotIncludeMaxDateMessageList(conversationId, offset, limit);
+    }
 }
