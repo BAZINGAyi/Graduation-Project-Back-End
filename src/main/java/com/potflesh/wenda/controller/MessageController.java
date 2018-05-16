@@ -124,6 +124,12 @@ public class MessageController {
     }
 
     /////////////////////////////////////////////////////////////////////////////////// api interface ////////////////////////////////////////////////////////
+
+    /**
+     * 该接口主要功能是按照 conservation_id(也就是thread)返回message列表，并同时返回某个thead的全部消息
+     * 由于功能的实现，先实现前端，之后按照前端的逻辑实现后端的逻辑，所以可能较为晦涩难懂
+     * @return
+     */
     @RequestMapping(path = {"api/msg/list"}, method = {RequestMethod.GET})
     @ResponseBody
     public String getConversationList() {
@@ -150,36 +156,75 @@ public class MessageController {
                 return WendaUtil.getJSONString(HttpStatusCode.NO_CONTENT, messageList);
             }
 
+            Map<String, Object> firstThreadMaps = new HashedMap();
+            int count = 0;
+            String firstThreadConversationId = "";
+            int firstThreadId = 0;
             List<Map<String, Object>> resultList = new ArrayList<>();
             for (Message message : conversationList) {
 
                 Map<String, Object> threadMaps = new HashedMap();
                 threadMaps.put("id", message.getConversationId());
+                // 如果是登录用户自己发送的消息，则thread应该保存to_id的信息
                 if (localUserId == message.getFromId()) {
                     threadMaps.put("name", userService.getUser(message.getToId()).getName());
                     threadMaps.put("avatarSrc", userService.getUser(message.getToId()).getHeadUrl());
                 } else if (localUserId == message.getToId()){
+                //  如果是登录用户是接收消息的对象，则thread应该保存from_id的信息
                     threadMaps.put("name", userService.getUser(message.getFromId()).getName());
                     threadMaps.put("avatarSrc", userService.getUser(message.getFromId()).getHeadUrl());
                 }
-                Map<String, Object> maps1 = new HashedMap();
-                maps1.put("user", userService.getUser(message.getFromId()));
-                maps1.put("sentAt", message.getCreatedDate());
-                maps1.put("text", message.getContent());
-                maps1.put("thread", threadMaps);
-                threadMaps.put("lastMessage", maps1);
+                Map<String, Object> lastMessageMap = new HashedMap();
+                lastMessageMap.put("author", userService.getUser(message.getFromId()));
+                lastMessageMap.put("sentAt", message.getCreatedDate());
+                lastMessageMap.put("text", message.getContent());
+                lastMessageMap.put("thread", threadMaps);
+                lastMessageMap.put("id", message.getId());
+                threadMaps.put("lastMessage", lastMessageMap);
 
                 Map<String, Object> maps = new HashedMap();
-                maps.put("user", userService.getUser(message.getFromId()));
+                maps.put("author", userService.getUser(message.getFromId()));
                 maps.put("sentAt", message.getCreatedDate());
                 maps.put("text", message.getContent());
                 maps.put("thread", threadMaps);
+                maps.put("id", message.getId());
 
                 resultList.add(maps);
+
+                // 取第一条 message 中的 thread，用于显示和他的全部的聊天内容
+                if (count == 0) {
+                    firstThreadMaps.put("id", message.getConversationId());
+                    // 如果是登录用户自己发送的消息，则thread应该保存to_id的信息
+                    if (localUserId == message.getFromId()) {
+                        firstThreadMaps.put("name", userService.getUser(message.getToId()).getName());
+                        firstThreadMaps.put("avatarSrc", userService.getUser(message.getToId()).getHeadUrl());
+                    } else if (localUserId == message.getToId()){
+                        //  如果是登录用户是接收消息的对象，则thread应该保存from_id的信息
+                        firstThreadMaps.put("name", userService.getUser(message.getFromId()).getName());
+                        firstThreadMaps.put("avatarSrc", userService.getUser(message.getFromId()).getHeadUrl());
+                    }
+                    firstThreadConversationId = message.getConversationId();
+                    System.out.println("convsercaton:" + message.getConversationId());
+                    System.out.println("convsercaton:" + message.getId());
+                    System.out.println("convsercaton:" + message.getContent());
+                    firstThreadId = message.getId();
+                    System.out.println("Id:" + firstThreadId);
+                    count++;
+                }
+            }
+
+
+            // 添加和第一个 thread 的会话的所有message
+            List<Message> firstThreadMessages= new ArrayList<>();
+            firstThreadMessages = messageService.getConversationDetail(firstThreadConversationId, 0 , 10);
+            if (firstThreadMessages != null && firstThreadMessages.size() != 0) {
+                messageList.put("firstThreadMessages", generateFrontEndMessageLogicStructure(firstThreadMessages, localUserId, firstThreadId));
             }
 
             messageList.put("msg", "请求成功");
             messageList.put("messageList", resultList);
+            messageList.put("currentThread", firstThreadMaps);
+            messageList.put("currentUser", userService.getUser(localUserId));
 
             return WendaUtil.getJSONString(HttpStatusCode.SUCCESS_STATUS, messageList);
 
@@ -197,6 +242,83 @@ public class MessageController {
 
         messageList.put("msg", "请求成功");
         return WendaUtil.getJSONString(HttpStatusCode.SERVIC_ERROR, messageList);
+    }
+
+    List<Map<String, Object>> generateFrontEndMessageLogicStructure( List<Message> messages, int localUserId, int firstThreadId) {
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        for (Message message : messages) {
+            System.out.println("nu" + firstThreadId);
+            System.out.println("跳过第一个" + message.getId());
+            if (firstThreadId == message.getId()) {
+                continue;
+            }
+
+            Map<String, Object> threadMaps = new HashedMap();
+            threadMaps.put("id", message.getConversationId());
+            // 如果是登录用户自己发送的消息，则thread应该保存to_id的信息
+            if (localUserId == message.getFromId()) {
+                threadMaps.put("name", userService.getUser(message.getToId()).getName());
+                threadMaps.put("avatarSrc", userService.getUser(message.getToId()).getHeadUrl());
+            } else if (localUserId == message.getToId()){
+                //  如果是登录用户是接收消息的对象，则thread应该保存from_id的信息
+                threadMaps.put("name", userService.getUser(message.getFromId()).getName());
+                threadMaps.put("avatarSrc", userService.getUser(message.getFromId()).getHeadUrl());
+            }
+            Map<String, Object> lastMessageMap = new HashedMap();
+            lastMessageMap.put("author", userService.getUser(message.getFromId()));
+            lastMessageMap.put("sentAt", message.getCreatedDate());
+            lastMessageMap.put("text", message.getContent());
+            lastMessageMap.put("thread", threadMaps);
+            lastMessageMap.put("id", message.getId());
+            threadMaps.put("lastMessage", lastMessageMap);
+
+            Map<String, Object> maps = new HashedMap();
+            maps.put("author", userService.getUser(message.getFromId()));
+            maps.put("sentAt", message.getCreatedDate());
+            maps.put("text", message.getContent());
+            maps.put("thread", threadMaps);
+            maps.put("id", message.getId());
+
+            resultList.add(maps);
+        }
+        return resultList;
+    }
+
+    @RequestMapping(path = {"api/msg/addMessage"}, method = {RequestMethod.POST})
+    @ResponseBody
+    public String addMessageAPI(@RequestParam("toName") String toName,
+                             @RequestParam("content") String content) {
+
+        Map<String, Object> messageResultMap = new HashedMap();
+
+        try {
+            if (hostHolder.getUsers() == null) {
+                messageResultMap.put("MSG", "请重新登录");
+                return WendaUtil.getJSONString(HttpStatusCode.Unauthorized, messageResultMap);
+            }
+
+            User user = userService.selectByName(toName);
+            if (user == null) {
+                return WendaUtil.getJsonString(HttpStatusCode.REQUEST_PARAMARY_ERROR, "用户不存在");
+            }
+
+            int fromId = hostHolder.getUsers().getId();
+            int toId = user.getId();
+
+            Message msg = new Message();
+            msg.setContent(content);
+            msg.setFromId(hostHolder.getUsers().getId());
+            msg.setToId(user.getId());
+            msg.setCreatedDate(new Date());
+            msg.setConversationId(fromId < toId ? String.format("%d_%d", fromId, toId) : String.format("%d_%d", toId, fromId));
+            messageService.addMessage(msg);
+
+            return WendaUtil.getJsonString(HttpStatusCode.SUCCESS_STATUS, "请求成功");
+        } catch (Exception e) {
+            logger.error("发送消息失败" + e.getMessage());
+            return WendaUtil.getJsonString(1, "发送消息失败");
+        }
+
     }
 
 }

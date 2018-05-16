@@ -30,7 +30,9 @@ public interface MessageDAO {
     @Update({"update ", TABLE_NAME, " set hasRead = 1 where conversation_id=#{conversationId}"})
     int setConversationReadCount(@Param("conversationId") String conversationId);
 
-    @Select({"select ", INSERT_FIELDS, " ,count(id) as id from ( select * from ", TABLE_NAME, " where from_id=#{userId} or to_id=#{userId} order by id desc) tt group by conversation_id  order by created_date desc limit #{offset}, #{limit}"})
+//    @Select({"select ", INSERT_FIELDS, " ,count(id) as id from ( select * from ", TABLE_NAME, " where from_id=#{userId} or to_id=#{userId} order by id desc) tt group by conversation_id  order by created_date desc limit #{offset}, #{limit}"})
+//
+    @Select({"select * from", TABLE_NAME, "where id in (select max(id) from (select * from ", TABLE_NAME, " where from_id = #{userId} or to_id=#{userId}  order by created_date asc ) tt group by conversation_id) limit #{offset}, #{limit}"})
     List<Message> getConversationList(@Param("userId") int userId,
                                       @Param("offset") int offset, @Param("limit") int limit);
     // 由于 message 是没有用的，所以把统计出的会话的总数赋值给 id 通过 id 反应出会话的总数。
