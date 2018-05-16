@@ -4,6 +4,7 @@ import com.potflesh.wenda.model.*;
 import com.potflesh.wenda.service.MessageService;
 import com.potflesh.wenda.service.UserService;
 import com.potflesh.wenda.utils.HttpStatusCode;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.ibatis.annotations.Param;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,9 +126,12 @@ public class MessageController {
     /////////////////////////////////////////////////////////////////////////////////// api interface ////////////////////////////////////////////////////////
     @RequestMapping(path = {"api/msg/list"}, method = {RequestMethod.GET})
     @ResponseBody
-    public String getConversationList(@RequestBody Map<String, Object> reqMap) {
+    public String getConversationList() {
+
+        Map<String, Object> messageList = new HashMap<>();
+
         try {
-            Map<String, Object> messageList = new HashMap<>();
+
             if (hostHolder.getUsers() == null) {
                 messageList.put("msg", "请登录");
                 return WendaUtil.getJSONString(HttpStatusCode.Unauthorized, messageList);
@@ -136,10 +140,53 @@ public class MessageController {
             int localUserId = hostHolder.getUsers().getId();
 
             // 取出和用户所有有关的 message
-            List<Message> userMessages = messageService.getMessagesByUserId(localUserId, 0 ,100);
+//            List<Message> userMessages = messageService.getMessagesByUserId(localUserId, 0 ,100);
 
             // 将 message 遍历按照组分类，形成新的 conversation
             List<Message> conversationList = messageService.getConversationList(localUserId, 0, 100);
+
+            if (conversationList == null || conversationList.size() == 0) {
+                messageList.put("msg", "返回的数字为空");
+                return WendaUtil.getJSONString(HttpStatusCode.NO_CONTENT, messageList);
+            }
+
+            List<Map<String, Object>> resultList = new ArrayList<>();
+            for (Message message : conversationList) {
+
+                Map<String, Object> threadMaps = new HashedMap();
+                threadMaps.put("id", message.getConversationId());
+                if (localUserId == message.getFromId()) {
+                    threadMaps.put("name", userService.getUser(message.getToId()).getName());
+                    threadMaps.put("avatarSrc", userService.getUser(message.getToId()).getHeadUrl());
+                } else if (localUserId == message.getToId()){
+                    threadMaps.put("name", userService.getUser(message.getFromId()).getName());
+                    threadMaps.put("avatarSrc", userService.getUser(message.getFromId()).getHeadUrl());
+                }
+                Map<String, Object> maps1 = new HashedMap();
+                maps1.put("user", userService.getUser(message.getFromId()));
+                maps1.put("sentAt", message.getCreatedDate());
+                maps1.put("text", message.getContent());
+                maps1.put("thread", threadMaps);
+                threadMaps.put("lastMessage", maps1);
+
+                Map<String, Object> maps = new HashedMap();
+                maps.put("user", userService.getUser(message.getFromId()));
+                maps.put("sentAt", message.getCreatedDate());
+                maps.put("text", message.getContent());
+                maps.put("thread", threadMaps);
+
+                resultList.add(maps);
+            }
+
+            messageList.put("msg", "请求成功");
+            messageList.put("messageList", resultList);
+
+            return WendaUtil.getJSONString(HttpStatusCode.SUCCESS_STATUS, messageList);
+
+
+            // 将 message 分成分组，形成多个 conversation。
+
+            // 然后根据 conversation 获取个人的通话面板
 
             // 将形成的 conversation 放入返回的 message 里
 
@@ -148,7 +195,8 @@ public class MessageController {
             logger.error("获取站内信列表失败" + e.getMessage());
         }
 
-        return "";
+        messageList.put("msg", "请求成功");
+        return WendaUtil.getJSONString(HttpStatusCode.SERVIC_ERROR, messageList);
     }
 
 }
